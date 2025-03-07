@@ -1,14 +1,17 @@
 // src/pages/ProfilePage.tsx
-import React from 'react';
+import React, { useState } from 'react';
 import MainLayout from '../components/layout/MainLayout';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
-import { useProfile } from '@/hooks/UseProfile';
+import { useProfile } from '@/hooks/useProfile';
 import ProfileCard from '@/features/profile/ProfileCard';
+import EditProfileForm from '@/features/profile/EditProfileForm';
+import { Button } from '@/components/ui/button';
 
 const ProfilePage: React.FC = () => {
-  const { profile, isLoading, error } = useProfile();
+  const { profile, isLoading, error, updateProfile } = useProfile();
+  const [isEditing, setIsEditing] = useState(false);
   
   // Content to render based on state
   const renderContent = () => {
@@ -38,7 +41,30 @@ const ProfilePage: React.FC = () => {
       );
     }
     
-    return <ProfileCard profileData={profile} />;
+    if (isEditing) {
+      return <EditProfileForm 
+        profileData={profile} 
+        onSave={async (data) => {
+          await updateProfile(data);
+          setIsEditing(false);
+        }}
+        onCancel={() => setIsEditing(false)}
+      />;
+    }
+    
+    return (
+      <>
+        <div className="flex justify-end mb-4">
+          <Button 
+            variant="outline" 
+            onClick={() => setIsEditing(true)}
+          >
+            Edit Profile
+          </Button>
+        </div>
+        <ProfileCard profileData={profile} />
+      </>
+    );
   };
   
   return (
