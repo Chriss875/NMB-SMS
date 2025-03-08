@@ -21,11 +21,11 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle }) => {
     : 'U';
 
   return (
-    <header className="bg-blue-700 text-white py-2 px-4 flex items-center justify-between">
+    <header className="bg-[#2844A7] text-white py-2 px-4 flex items-center justify-between">
       <div className="flex items-center space-x-4">
         <button 
           onClick={onMenuToggle}
-          className="p-1 rounded-md hover:bg-blue-600 lg:hidden"
+          className="p-1 rounded-md hover:bg-[#233a8e] lg:hidden"
         >
           <Menu className="h-6 w-6" />
         </button>

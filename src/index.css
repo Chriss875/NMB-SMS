@@ -2,6 +2,11 @@
 
 @plugin "tailwindcss-animate";
 
+/* Add this style */
+* {
+  font-family: 'Poppins', sans-serif;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 :root {

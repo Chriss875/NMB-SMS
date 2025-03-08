@@ -9,10 +9,10 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 // Pages
 import LoginPage from './features/authentication/LoginPage';
 import ProfilePage from './pages/ProfilePage';
-import SignUpPage from './features/authentication/SignupPage';
 import VerifyEmailPage from './features/authentication/VerifyEmailPage';
 import CompleteProfilePage from './features/authentication/CompleteProfilePage';
-import ResultsPage from './pages/ResultsPage'; // Add this import
+import ResultsPage from './features/upload results/ResultsPage'; // Add this import
+import SignUpPage from './features/authentication/SignUpPage';
 
 // Basic loading component
 const LoadingFallback = () => (
@@ -42,10 +42,10 @@ const App: React.FC = () => {
             </Route>
             
             {/* Root path redirects to login */}
-            <Route path="/" element={<Navigate to={ROUTES.LOGIN} replace />} />
+            <Route path="/" element={<Navigate to={ROUTES.PROFILE} replace />} />
             
             {/* Catch-all redirect */}
-            <Route path="*" element={<Navigate to={ROUTES.LOGIN} replace />} />
+            <Route path="*" element={<Navigate to={ROUTES.PROFILE} replace />} />
           </Routes>
         </Suspense>
       </BrowserRouter>
