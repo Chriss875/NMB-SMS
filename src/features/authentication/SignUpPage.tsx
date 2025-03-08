@@ -1,33 +1,54 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, Link, useLocation } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, LogIn } from 'lucide-react';
+import { AlertCircle, UserPlus, ArrowLeft } from 'lucide-react';
 
-const LoginPage: React.FC = () => {
+const SignUpPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { login, isLoading, error } = useAuth();
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [formError, setFormError] = useState<string | null>(null);
+  const { register, isLoading, error } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (location.state?.registrationSuccess) {
-      setSuccessMessage('Account created successfully! Please sign in.');
+  
+  const validateForm = () => {
+    // Email validation
+    const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+    if (!emailRegex.test(email)) {
+      setFormError('Please enter a valid email address');
+      return false;
     }
-    if (location.state?.verificationSuccess || location.state?.profileSuccess) {
-      setSuccessMessage(location.state.message || 'Your account is ready! You can now sign in.');
+    
+    // Password validation (minimum 8 characters)
+    if (password.length < 8) {
+      setFormError('Password must be at least 8 characters long');
+      return false;
     }
-  }, [location.state]);
+    
+    // Password matching
+    if (password !== confirmPassword) {
+      setFormError('Passwords do not match');
+      return false;
+    }
+    
+    setFormError(null);
+    return true;
+  };
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+    
     try {
-      await login(email, password);
-      navigate('/profile');
+      await register({ email, password });
+      // Redirect to verification page with email in state
+      navigate('/verify-email', { state: { email } });
     } catch (err) {
       // Error is handled in AuthContext
     }
@@ -40,27 +61,20 @@ const LoginPage: React.FC = () => {
           <div className="flex justify-center mb-4">
             <img src="/assets/images/nmb-logo.png" alt="NMB Logo" className="h-16 w-auto" />
           </div>
-          <CardTitle className="text-center">Nuru Yangu Scholarship Portal</CardTitle>
+          <CardTitle className="text-center">Create Your Account</CardTitle>
         </CardHeader>
         
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
-            {successMessage && (
-              <Alert className="bg-green-50 border-green-200">
-                <AlertDescription className="text-green-800">
-                  {successMessage}
-                </AlertDescription>
-              </Alert>
-            )}
-            {error && (
+            {(formError || error) && (
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{error}</AlertDescription>
+                <AlertDescription>{formError || error}</AlertDescription>
               </Alert>
             )}
             
             <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              <label htmlFor="email" className="text-sm font-medium leading-none">
                 Email
               </label>
               <input
@@ -75,19 +89,30 @@ const LoginPage: React.FC = () => {
             </div>
             
             <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <label htmlFor="password" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                  Password
-                </label>
-                <Link to="/forgot-password" className="text-xs text-blue-600 hover:underline">
-                  Forgot password?
-                </Link>
-              </div>
+              <label htmlFor="password" className="text-sm font-medium leading-none">
+                Password
+              </label>
               <input
                 id="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
+                required
+              />
+              <p className="text-xs text-gray-500">Must be at least 8 characters</p>
+            </div>
+            
+            <div className="space-y-2">
+              <label htmlFor="confirmPassword" className="text-sm font-medium leading-none">
+                Confirm Password
+              </label>
+              <input
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="••••••••"
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
                 required
@@ -104,20 +129,20 @@ const LoginPage: React.FC = () => {
               {isLoading ? (
                 <>
                   <span className="animate-spin mr-2">⟳</span>
-                  Signing in...
+                  Creating Account...
                 </>
               ) : (
                 <>
-                  <LogIn className="mr-2 h-4 w-4" />
-                  Sign In
+                  <UserPlus className="mr-2 h-4 w-4" />
+                  Sign Up
                 </>
               )}
             </Button>
             
             <div className="text-center text-sm">
-              Don't have an account?{" "}
-              <Link to="/signup" className="text-blue-600 hover:underline font-medium">
-                Sign up
+              <Link to="/login" className="flex items-center justify-center text-blue-600 hover:underline">
+                <ArrowLeft className="mr-1 h-4 w-4" />
+                Back to Sign In
               </Link>
             </div>
           </CardFooter>
@@ -127,4 +152,4 @@ const LoginPage: React.FC = () => {
   );
 };
 
-export default LoginPage;
+export default SignUpPage;

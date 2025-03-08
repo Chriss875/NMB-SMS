@@ -9,6 +9,10 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 // Pages
 import LoginPage from './features/authentication/LoginPage';
 import ProfilePage from './pages/ProfilePage';
+import SignUpPage from './features/authentication/SignupPage';
+import VerifyEmailPage from './features/authentication/VerifyEmailPage';
+import CompleteProfilePage from './features/authentication/CompleteProfilePage';
+import ResultsPage from './pages/ResultsPage'; // Add this import
 
 // Basic loading component
 const LoadingFallback = () => (
@@ -26,16 +30,22 @@ const App: React.FC = () => {
           <Routes>
             {/* Public routes */}
             <Route path={ROUTES.LOGIN} element={<LoginPage />} />
+            <Route path={ROUTES.SIGNUP} element={<SignUpPage />} />
+            <Route path={ROUTES.VERIFY_EMAIL} element={<VerifyEmailPage />} />
+            <Route path={ROUTES.COMPLETE_PROFILE} element={<CompleteProfilePage />} />
             
             {/* Protected routes */}
             <Route element={<ProtectedRoute />}>
-              <Route path={ROUTES.HOME} element={<Navigate to={ROUTES.PROFILE} replace />} />
               <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
+              <Route path={ROUTES.RESULTS} element={<ResultsPage />} /> {/* Add this line */}
               {/* Add other protected routes here */}
             </Route>
             
+            {/* Root path redirects to login */}
+            <Route path="/" element={<Navigate to={ROUTES.LOGIN} replace />} />
+            
             {/* Catch-all redirect */}
-            <Route path="*" element={<Navigate to="/login" replace />} />
+            <Route path="*" element={<Navigate to={ROUTES.LOGIN} replace />} />
           </Routes>
         </Suspense>
       </BrowserRouter>

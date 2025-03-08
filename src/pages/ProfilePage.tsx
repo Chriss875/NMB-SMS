@@ -8,9 +8,11 @@ import { useProfile } from '@/hooks/useProfile';
 import ProfileCard from '@/features/profile/ProfileCard';
 import EditProfileForm from '@/features/profile/EditProfileForm';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/useAuth';
 
 const ProfilePage: React.FC = () => {
   const { profile, isLoading, error, updateProfile } = useProfile();
+  useAuth();
   const [isEditing, setIsEditing] = useState(false);
   
   // Content to render based on state
