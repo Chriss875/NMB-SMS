@@ -96,8 +96,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
             <NavigationItem 
               icon={<MessageSquare className="h-5 w-5" />} 
               label={isOpen ? "Messages" : ""}
-              to={ROUTES.MESSAGES}
-              active={isActive(ROUTES.MESSAGES)}
+              to={ROUTES.MESSAGING}
+              active={isActive(ROUTES.MESSAGING)}
               badge={unreadMessages}
             />
             <NavigationItem 

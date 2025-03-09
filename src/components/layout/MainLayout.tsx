@@ -30,7 +30,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   
   return (
     <div className="flex flex-col h-screen">
-      <Header onMenuToggle={toggleMobileSidebar} />
+      <Header onMenuToggle={toggleMobileSidebar} sidebarOpen={false} setSidebarOpen={function (): void {
+              throw new Error('Function not implemented.');
+          } } />
       
       {/* Backdrop for mobile */}
       {sidebarMobileOpen && (

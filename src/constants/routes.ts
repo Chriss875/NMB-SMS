@@ -8,7 +8,9 @@ export const ROUTES = {
   PROFILE: '/profile',
   RESULTS: '/results',
   PAYMENTS: '/payments',
-  MESSAGES: '/messages',
   MENTORSHIP: '/mentorship',
-  SETTINGS: '/settings'
+  SETTINGS: '/settings',
+  MESSAGING: '/messaging',
+  ANNOUNCEMENTS: '/messaging/announcements',
+  CHATS: '/messaging/chats',
 };

@@ -14,7 +14,12 @@ import CompleteProfilePage from './features/authentication/CompleteProfilePage';
 import ResultsPage from './features/upload results/ResultsPage';
 import SignUpPage from './features/authentication/SignUpPage';
 import PaymentsPage from './features/payment/PaymentsPage';
-import MentorshipPage from './features/career-mentorship/MentorshipPage'; // Add this import
+import MentorshipPage from './features/career-mentorship/MentorshipPage';
+
+// Messaging Pages
+import MessagingLayout from './features/messaging/pages/MessagingLayout';
+import AnnouncementsPage from './features/messaging/pages/AnnouncementsPage';
+import ChatsPage from './features/messaging/pages/ChatsPage';
 
 // Basic loading component
 const LoadingFallback = () => (
@@ -42,7 +47,13 @@ const App: React.FC = () => {
               <Route path={ROUTES.RESULTS} element={<ResultsPage />} />
               <Route path={ROUTES.PAYMENTS} element={<PaymentsPage />} />
               <Route path={ROUTES.MENTORSHIP} element={<MentorshipPage />} />
-              {/* Add other protected routes here */}
+              
+              {/* Messaging routes */}
+              <Route path={ROUTES.MESSAGING} element={<MessagingLayout />}>
+                <Route index element={<Navigate to={ROUTES.ANNOUNCEMENTS} replace />} />
+                <Route path="announcements" element={<AnnouncementsPage />} />
+                <Route path="chats" element={<ChatsPage />} />
+              </Route>
             </Route>
             
             {/* Root path redirects to login */}

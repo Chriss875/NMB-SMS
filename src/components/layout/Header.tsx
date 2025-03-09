@@ -5,9 +5,11 @@ import { useAuth } from '@/hooks/useAuth';
 
 interface HeaderProps {
   onMenuToggle: () => void;
+  sidebarOpen: boolean;
+  setSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const Header: React.FC<HeaderProps> = ({ onMenuToggle }) => {
+const Header: React.FC<HeaderProps> = ({ sidebarOpen, setSidebarOpen }) => {
   const { user, logout } = useAuth();
   
   const handleLogout = async () => {
@@ -21,10 +23,10 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle }) => {
     : 'U';
 
   return (
-    <header className="bg-[#2844A7] text-white py-2 px-4 flex items-center justify-between">
+    <header className="bg-[#2844A7] text-white py-2 px-4 flex items-center justify-between w-full">
       <div className="flex items-center space-x-4">
         <button 
-          onClick={onMenuToggle}
+          onClick={() => setSidebarOpen(!sidebarOpen)}
           className="p-1 rounded-md hover:bg-[#233a8e] lg:hidden"
         >
           <Menu className="h-6 w-6" />
