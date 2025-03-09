@@ -13,7 +13,8 @@ import VerifyEmailPage from './features/authentication/VerifyEmailPage';
 import CompleteProfilePage from './features/authentication/CompleteProfilePage';
 import ResultsPage from './features/upload results/ResultsPage';
 import SignUpPage from './features/authentication/SignUpPage';
-import PaymentsPage from './features/payment/PaymentsPage'; // Add this import
+import PaymentsPage from './features/payment/PaymentsPage';
+import MentorshipPage from './features/career-mentorship/MentorshipPage'; // Add this import
 
 // Basic loading component
 const LoadingFallback = () => (
@@ -39,7 +40,8 @@ const App: React.FC = () => {
             <Route element={<ProtectedRoute />}>
               <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
               <Route path={ROUTES.RESULTS} element={<ResultsPage />} />
-              <Route path={ROUTES.PAYMENTS} element={<PaymentsPage />} /> {/* Add this line */}
+              <Route path={ROUTES.PAYMENTS} element={<PaymentsPage />} />
+              <Route path={ROUTES.MENTORSHIP} element={<MentorshipPage />} />
               {/* Add other protected routes here */}
             </Route>
             
