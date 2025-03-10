@@ -1,13 +1,13 @@
 // src/components/layout/Sidebar.tsx
-import React, { useState } from 'react'; // Add useState import
-import { useLocation } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useLocation, Link } from 'react-router-dom';
 import { ROUTES } from '../../constants/routes';
 import NavigationItem from './NavigationItem';
 import { useAuth } from '@/hooks/useAuth';
 import { 
   Home, User, FileText, CreditCard, 
   MessageSquare, Users, Settings, LogOut,
-  Menu, AlertCircle
+  Menu, AlertCircle, Bell, MessageCircle
 } from 'lucide-react';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -21,16 +21,28 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
   const location = useLocation();
   const currentPath = location.pathname;
   const { logout } = useAuth();
-  // Add state for logout confirmation modal
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [expandedMenus, setExpandedMenus] = useState<string[]>([]);
   
   // Check if path matches to set active state
   const isActive = (path: string) => currentPath === path;
   
-  // MockData - In a real app, this would come from an API/context
-  const unreadMessages = 1;
+  // Check if path is under a parent route
+  const isUnderParent = (parentPath: string) => currentPath.startsWith(parentPath);
   
-  // Show the confirmation dialog
+  // Toggle submenu expansion
+  const toggleSubmenu = (menuKey: string) => {
+    setExpandedMenus(current => 
+      current.includes(menuKey) 
+        ? current.filter(item => item !== menuKey)
+        : [...current, menuKey]
+    );
+  };
+  
+  // Check if menu is expanded
+  const isMenuExpanded = (menuKey: string) => expandedMenus.includes(menuKey);
+  
+  // Close sidebar when clicking outside on mobile
   const promptLogout = () => {
     setShowLogoutConfirm(true);
   };
@@ -39,7 +51,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
   const handleLogout = async () => {
     await logout();
     setShowLogoutConfirm(false);
-    // Redirect is handled automatically by the ProtectedRoute component
   };
   
   // Cancel logout
@@ -57,7 +68,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
         ${isOpen ? 'w-64' : 'lg:w-20'} 
       `}>
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          {/* Always show hamburger menu icon */}
           <button
             onClick={onToggle}
             className="p-1 rounded-md hover:bg-gray-100 mx-auto lg:mx-0"
@@ -93,13 +103,62 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
               to={ROUTES.PAYMENTS}
               active={isActive(ROUTES.PAYMENTS)}
             />
-            <NavigationItem 
-              icon={<MessageSquare className="h-5 w-5" />} 
-              label={isOpen ? "Messages" : ""}
-              to={ROUTES.MESSAGING}
-              active={isActive(ROUTES.MESSAGING)}
-              badge={unreadMessages}
-            />
+
+            {/* Messaging with nested items */}
+            <li>
+              <button 
+                className={`w-full flex items-center justify-between p-3 rounded-lg ${
+                  isUnderParent(ROUTES.MESSAGING) 
+                    ? 'bg-blue-100 text-blue-700' 
+                    : 'text-gray-600 hover:bg-gray-100'
+                }`}
+                onClick={() => toggleSubmenu('messaging')}
+              >
+                <div className={`flex items-center ${!isOpen && 'justify-center w-full'}`}>
+                  <MessageSquare className="h-5 w-5" />
+                  {isOpen && <span className="ml-3">Messaging</span>}
+                </div>
+                {isOpen && (
+                  <svg 
+                    className={`w-4 h-4 transform ${isMenuExpanded('messaging') ? 'rotate-90' : ''}`} 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                )}
+              </button>
+              
+              {/* Submenu items */}
+              {(isOpen || isMenuExpanded('messaging')) && (
+                <ul className={`mt-0.5 pl-5 space-y-0.5 ${isMenuExpanded('messaging') || isUnderParent(ROUTES.MESSAGING) ? 'block' : 'hidden'}`}>
+                  <li>
+                    <Link 
+                      to={ROUTES.ANNOUNCEMENTS}
+                      className={`flex items-center py-2 px-2.5 rounded-md text-sm ${
+                        isActive(ROUTES.ANNOUNCEMENTS) ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50'
+                      }`}
+                    >
+                      <Bell className="h-4 w-4 min-w-[16px]" />
+                      {isOpen && <span className="ml-2.5 truncate">Announcements</span>}
+                    </Link>
+                  </li>
+                  <li>
+                    <Link 
+                      to={ROUTES.CHATS}
+                      className={`flex items-center py-2 px-2.5 rounded-md text-sm ${
+                        isActive(ROUTES.CHATS) ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50'
+                      }`}
+                    >
+                      <MessageCircle className="h-4 w-4 min-w-[16px]" />
+                      {isOpen && <span className="ml-2.5 truncate">Chats</span>}
+                    </Link>
+                  </li>
+                </ul>
+              )}
+            </li>
+
             <NavigationItem 
               icon={<Users className="h-5 w-5" />} 
               label={isOpen ? "Career Mentorship" : ""}
@@ -127,12 +186,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
         </div>
       </aside>
 
-      {/* Logout Confirmation Modal - Modified for better overlay positioning */}
+      {/* Logout Confirmation Modal */}
       {showLogoutConfirm && (
         <div className="fixed inset-0 z-[9999] bg-black bg-opacity-50 flex items-center justify-center p-4"
              style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
              onClick={(e) => {
-               // Close when clicking outside the modal
                if (e.target === e.currentTarget) {
                  cancelLogout();
                }
