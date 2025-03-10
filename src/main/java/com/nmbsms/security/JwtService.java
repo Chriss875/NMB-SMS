@@ -3,10 +3,10 @@ package com.nmbsms.security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.stereotype.Component;
 import com.nmbsms.configuration.Jwtproperties;
 import java.util.Date;
 import javax.crypto.SecretKey;
+import org.springframework.stereotype.Component;
 
 @Component
 public class JwtService {
@@ -15,7 +15,6 @@ public class JwtService {
 
     public JwtService(Jwtproperties jwtProperties) {
         this.jwtProperties = jwtProperties;
-        // Generate a secure key from your secret
         this.secretKey = Keys.hmacShaKeyFor(jwtProperties.getSecret().getBytes());
     }
 

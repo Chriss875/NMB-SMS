@@ -10,15 +10,15 @@ public class SignUpService {
     private final SignUpRepository signUpRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtUtil;
-    private final SignUpDTO signUpDTO;
 
     @Autowired
     private Integer minPasswordLength;
 
-    public SignUpService(SignUpRepository signUpRepository, PasswordEncoder passwordEncoder, SignUpDTO signUpDTO, JwtService jwtUtil) {
+    SignUpDTO signUpDTO= new SignUpDTO();
+
+    public SignUpService(SignUpRepository signUpRepository, PasswordEncoder passwordEncoder, JwtService jwtUtil) {
         this.signUpRepository = signUpRepository;
         this.passwordEncoder = passwordEncoder;
-        this.signUpDTO = signUpDTO;
         this.jwtUtil = jwtUtil;
     }
 
@@ -69,7 +69,7 @@ public class SignUpService {
         if(user.isEmpty()){
             return "Invalid credentials";
         }
-        if(!passwordEncoder.matches(password, user.get().getPassword())){
+        if(passwordEncoder.matches(password, user.get().getPassword())){
             String token = jwtUtil.generateToken(email);
             return "Login successful: " + token;
         }
