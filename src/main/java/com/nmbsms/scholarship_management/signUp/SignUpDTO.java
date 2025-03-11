@@ -18,7 +18,7 @@ public class SignUpDTO {
     private String password;
 
     private String confirmPassword;
-    private String token;
+    private Integer token;
     private String name;
     private String sex;
     private String phoneNumber;
