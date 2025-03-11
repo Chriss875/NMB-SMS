@@ -15,7 +15,7 @@ public class SignUpController {
     @PostMapping("/signup/initial")
     public ResponseEntity<String> initialSignUp(@RequestBody SignUpDTO signUpDTO){
         String result= signupService.initialSignUp(signUpDTO);
-        if(result.contains("Initial SignUp successful")){
+        if(result.contains("Proceed to token verification")){
             return ResponseEntity.ok(result);
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);

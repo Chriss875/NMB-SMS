@@ -3,7 +3,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.Optional;
 import com.nmbsms.security.JwtService;
-import org.springframework.beans.factory.annotation.Autowired;
 
 @Service
 public class SignUpService {
@@ -11,8 +10,6 @@ public class SignUpService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtUtil;
 
-    @Autowired
-    private Integer minPasswordLength;
 
     SignUpDTO signUpDTO= new SignUpDTO();
 
@@ -23,35 +20,32 @@ public class SignUpService {
     }
 
     public String initialSignUp(SignUpDTO signUpDTO){
-        if(signUpDTO.getPassword().length()<minPasswordLength){
-            return "Password must be at least " + minPasswordLength + " characters long";
-        }
+    Optional<SignUp> existingStudent = signUpRepository.findByEmail(signUpDTO.getEmail());
+    if (existingStudent.isEmpty()) {
+        return "Email not found. Contact admin for assistance.";
+    }
+    if (!signUpDTO.getPassword().equals(signUpDTO.getConfirmPassword())) {
+        return "Passwords do not match";
+    }
+    signUpDTO.setPassword(passwordEncoder.encode(signUpDTO.getPassword()));
 
-        if(!signUpDTO.getPassword().equals(signUpDTO.getConfirmPassword())){
-            return "Passwords do not match";
-        }
-        if (signUpRepository.findByEmail(signUpDTO.getEmail()).isPresent()){
-            return "Email already exists";
-        }
-        SignUp signUp = new SignUp();
-        signUp.setEmail(signUpDTO.getEmail());
-        signUp.setPassword(passwordEncoder.encode(signUpDTO.getPassword()));
-        signUpRepository.save(signUp);
-        return "Initial SignUp successful";
+    return "Proceed to token verification";
     }
     
     public String verifyToken(String email, String token){
-        Optional<SignUp> verification= signUpRepository.findByEmailAndToken(email,token);
-        if(verification.isPresent()){
-            return"Token verified successfully";
-        }
+    Optional<SignUp> studentOpt = signUpRepository.findByEmailAndToken(email, token);
+    if (studentOpt.isEmpty()) {
         return "Invalid token";
+    }
+    SignUp student = studentOpt.get();
+    student.setPassword(passwordEncoder.encode(signUpDTO.getPassword()));
+    student.setToken(null);
+    signUpRepository.save(student);
+    return "Token verified successfully";
     }
 
     public String completeSignUp(SignUpDTO signUpDTO){
         SignUp student=signUpRepository.findByEmail(signUpDTO.getEmail()).orElseThrow(()->new RuntimeException("User not found"));
-
-        student.setToken(null);
         student.setName(signUpDTO.getName());
         student.setSex(signUpDTO.getSex());
         student.setPhoneNumber(signUpDTO.getPhoneNumber());
