@@ -3,13 +3,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.Optional;
 import com.nmbsms.security.JwtService;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class SignUpService {
     private final SignUpRepository signUpRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtUtil;
-
+    private Map<String, String> tempPasswords= new HashMap<>();
 
     SignUpDTO signUpDTO= new SignUpDTO();
 
@@ -27,8 +29,8 @@ public class SignUpService {
     if (!signUpDTO.getPassword().equals(signUpDTO.getConfirmPassword())) {
         return "Passwords do not match";
     }
-    signUpDTO.setPassword(passwordEncoder.encode(signUpDTO.getPassword()));
-
+    String encodedPassword= passwordEncoder.encode(signUpDTO.getPassword());
+    tempPasswords.put(signUpDTO.getEmail(),encodedPassword);
     return "Proceed to token verification";
     }
     
@@ -37,10 +39,12 @@ public class SignUpService {
     if (studentOpt.isEmpty()) {
         return "Invalid token";
     }
+    String encodedPassword= tempPasswords.get(email);
     SignUp student = studentOpt.get();
-    student.setPassword(passwordEncoder.encode(signUpDTO.getPassword()));
+    student.setPassword(encodedPassword);
     student.setToken(null);
     signUpRepository.save(student);
+    tempPasswords.remove(email);
     return "Token verified successfully";
     }
 

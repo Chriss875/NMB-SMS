@@ -22,7 +22,7 @@ public class SignUp {
     @Column(unique=true,nullable=false)
     private String email;
 
-    @Column(nullable=false)
+    @Column(nullable=true)
     private String password;
 
     private String token;
@@ -33,6 +33,8 @@ public class SignUp {
     private String universityRegistrationId;
     private String courseProgrammeName;
     private String enrolledYear;
+
+    @Column(nullable=true)
     private int batchNo;
 
     @Column(nullable=true)
