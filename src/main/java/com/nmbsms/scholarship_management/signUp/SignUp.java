@@ -25,7 +25,7 @@ public class SignUp {
     @Column(nullable=true)
     private String password;
 
-    private Integer token;
+    private String token;
     private String name;
     private String sex;
     private String phoneNumber;
