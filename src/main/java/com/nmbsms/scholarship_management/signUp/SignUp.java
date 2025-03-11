@@ -35,7 +35,7 @@ public class SignUp {
     private String enrolledYear;
 
     @Column(nullable=true)
-    private int batchNo;
+    private Integer batchNo;
 
     @Column(nullable=true)
     private String avatar;

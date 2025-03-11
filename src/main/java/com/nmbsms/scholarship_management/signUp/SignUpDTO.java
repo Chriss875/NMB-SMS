@@ -26,6 +26,6 @@ public class SignUpDTO {
     private String universityRegistrationId;
     private String courseProgrammeName;
     private String enrolledYear;
-    private int batchNo;
+    private Integer batchNo;
     
 }
