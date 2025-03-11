@@ -49,7 +49,7 @@ public class SignUpService {
     }
 
     public String completeSignUp(SignUpDTO signUpDTO){
-        SignUp student=signUpRepository.findByEmail(signUpDTO.getEmail()).orElseThrow(()->new RuntimeException("User not found"));
+        SignUp student= new SignUp();
         student.setName(signUpDTO.getName());
         student.setSex(signUpDTO.getSex());
         student.setPhoneNumber(signUpDTO.getPhoneNumber());
