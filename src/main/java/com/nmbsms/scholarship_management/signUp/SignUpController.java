@@ -1,7 +1,9 @@
 package com.nmbsms.scholarship_management.signUp;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpHeaders;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -40,14 +42,26 @@ public class SignUpController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestParam String email, @RequestParam String password){
-        String result= signupService.login(email,password);
-        if(result.contains("Login successful")){
-            return ResponseEntity.ok(result);
-        }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);
+public ResponseEntity<String> login(@RequestParam String email, @RequestParam String password) {
+    String result = signupService.login(email, password);
+    if (!result.equals("Invalid credentials")) {
+        ResponseCookie jwtCookie = ResponseCookie.from("jwt", result)
+            .httpOnly(true)
+            .secure(true)
+            .path("/")
+            .maxAge(24 * 60 * 60)
+            .sameSite("Strict")
+            .build();
+            
+        return ResponseEntity.ok()
+            .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
+            .body("Login successful");
     }
-
+    
+    return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+        .body(result);
+}
+    
     @PostMapping("/reset-password")
     public ResponseEntity<String> resetPassword(@RequestParam String email, @RequestParam String newPassword){
         String result= signupService.resetPassword(email,newPassword);
@@ -55,11 +69,6 @@ public class SignUpController {
             return ResponseEntity.ok(result);
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);
-    }
-
-    @GetMapping("/system-dashboard")
-    public ResponseEntity<String> systemDashboard(){
-        return ResponseEntity.ok("System Dashboard");
     }
 
 }

@@ -69,7 +69,7 @@ public class SignUpService {
         }
         if(passwordEncoder.matches(password, user.get().getPassword())){
             String token = jwtUtil.generateToken(email);
-            return "Login successful: " + token;
+            return token;
         }
         return "Invalid credentials";
     }
