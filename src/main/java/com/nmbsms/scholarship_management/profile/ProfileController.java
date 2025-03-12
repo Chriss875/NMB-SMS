@@ -2,9 +2,11 @@ package com.nmbsms.scholarship_management.profile;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.multipart.MultipartFile;
 import com.nmbsms.security.JwtService;
 import jakarta.validation.Valid;
+import org.springframework.security.core.Authentication;
 
 @RestController
 @RequestMapping("/api/profile")
@@ -18,11 +20,11 @@ public class ProfileController {
     }
 
     @GetMapping
-    public ResponseEntity<ProfileDTO> getProfile(@RequestHeader("Authorization") String authHeader){
-        String token= authHeader.substring(7);
-        String email= jwtService.extractEmail(token);
-        ProfileDTO profile=profileService.getProfile(email);
-        return ResponseEntity.ok(profile);
+    public ResponseEntity<ProfileDTO> getProfile(){
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    String email = authentication.getName();
+    ProfileDTO profile = profileService.getProfile(email);
+    return ResponseEntity.ok(profile);
     }
 
     @PutMapping
