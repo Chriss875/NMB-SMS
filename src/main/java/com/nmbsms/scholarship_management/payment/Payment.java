@@ -12,9 +12,10 @@ import lombok.AllArgsConstructor;
 public class Payment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    private Long studentId;
-    private long feeControlNumber;
-    private long nhifControlNumber;
+    private long id;
+    private String email;
+    private String feeControlNumber;
+    private String nhifControlNumber;
+    private String name;
     
 }

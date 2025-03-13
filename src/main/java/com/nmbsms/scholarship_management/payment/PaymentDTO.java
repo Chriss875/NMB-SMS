@@ -8,7 +8,7 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class PaymentDTO {
 
-    private long feeControlNumber;
-    private long nhifControlNumber;
+    private String feeControlNumber;
+    private String nhifControlNumber;
     
 }
