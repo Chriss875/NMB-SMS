@@ -17,7 +17,7 @@ public class ProfileDTO {
     @Min(value = 2022, message = "Enrolled year must be 2022 or later")
     @Max(value = 2025, message = "Enrolled year must be 2025 or earlier")
     private String enrolledYear;
-    private int batchNo;
+    private Integer batchNo;
     private MultipartFile avatar;
     private String enrollmentStatus;
 
