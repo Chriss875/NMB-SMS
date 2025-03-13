@@ -7,7 +7,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 
 // Pages
-import LoginPage from './features/authentication/LoginPage';
+import LoginPage from './features/authentication/login/LoginPage';
 import ProfilePage from './pages/ProfilePage';
 import VerifyEmailPage from './features/authentication/VerifyEmailPage';
 import CompleteProfilePage from './features/authentication/CompleteProfilePage';

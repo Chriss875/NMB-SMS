@@ -1,7 +1,7 @@
 // src/hooks/useProfile.ts
 import { useState, useEffect } from 'react';
 import { ProfileData } from '../types/profile.types';
-import { getProfileData, updateProfileData } from '../services/profileService';
+import { profileService } from '../services/profileService';
 
 export const useProfile = () => {
   const [profile, setProfile] = useState<ProfileData | null>(null);
@@ -12,7 +12,7 @@ export const useProfile = () => {
     try {
       setIsLoading(true);
       setError(null);
-      const data = await getProfileData();
+      const data = await profileService.getProfileData();
       setProfile(data);
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Failed to fetch profile'));
@@ -25,7 +25,7 @@ export const useProfile = () => {
     try {
       setIsLoading(true);
       setError(null);
-      const updatedProfile = await updateProfileData(updatedData);
+      const updatedProfile = await profileService.updateProfileData(updatedData);
       setProfile(updatedProfile);
       return updatedProfile;
     } catch (err) {

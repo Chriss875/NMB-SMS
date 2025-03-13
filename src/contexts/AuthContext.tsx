@@ -1,4 +1,5 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
+import { authService } from '../services/authService';
 
 interface User {
   id: string;
@@ -34,111 +35,126 @@ export const AuthContext = createContext<AuthContextType>({
   requestVerificationCode: async () => {},
 });
 
-// For now, use a mock implementation
 export const AuthProvider: React.FC<{children: ReactNode}> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [signupData, setSignupData] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // Start with loading true to check auth on mount
   const [error, setError] = useState<string | null>(null);
   
-  // Mock login function
+  // Real login function using authService
   const login = async (email: string, password: string) => {
     setIsLoading(true);
+    setError(null);
+    
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500));
+      const response = await authService.login({ email, password });
       
-      // For development, accept any credentials with valid format
-      // In production, this would validate against the backend
-      if (email.includes('@') && password.length >= 6) {
-        // Get name from profile data if available
-        let name = email.split('@')[0]; // Default name from email
-        
-        try {
-          const storedProfileData = localStorage.getItem('profileData');
-          if (storedProfileData) {
-            const profileData = JSON.parse(storedProfileData);
-            if (profileData.email === email) {
-              name = profileData.name;
-            }
-          }
-        } catch (e) {
-          console.error("Error parsing profile data:", e);
-        }
-        
-        const mockUser = {
-          id: '1',
-          name: name,
-          email: email,
-          role: 'student'
-        };
-        
-        setUser(mockUser);
-        localStorage.setItem('user', JSON.stringify(mockUser));
-        setError(null);
-      } else {
-        setError('Invalid credentials');
-      }
-    } catch (err) {
-      setError('An error occurred during login');
+      // Store token
+      localStorage.setItem('token', response.token);
+      
+      // Set user
+      setUser(response.user);
+      
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to login. Please check your credentials.');
     } finally {
       setIsLoading(false);
     }
   };
   
-  // Mock logout function
+  // Real logout function
   const logout = async () => {
-    setUser(null);
-    localStorage.removeItem('user');
+    setIsLoading(true);
+    try {
+      await authService.logout();
+      setUser(null);
+    } catch (err) {
+      console.error('Logout error:', err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  // Mock register function
+  // Register function - implement with API
   const register = async (userData: any) => {
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Replace with actual API call when implemented
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Registration failed');
+      }
+      
       setSignupData(userData);
       setError(null);
       return "Registration successful";
-    } catch (err) {
-      setError('An error occurred during registration');
-      return "Registration failed";
+    } catch (err: any) {
+      const errorMessage = err.message || 'An error occurred during registration';
+      setError(errorMessage);
+      return errorMessage;
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Mock verification function
-  const verifyEmail = async (_email: string, code: string) => {
+  // Email verification function - implement with API
+  const verifyEmail = async (email: string, code: string) => {
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 800));
+      // Replace with actual API call when implemented
+      const response = await fetch('/api/auth/verify-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, code }),
+      });
       
-      // In a real app, you'd validate the code with your backend
-      if (code === '123456' || code === '000000') { // Demo codes
-        setError(null);
-        return;
-      } else {
-        setError('Invalid verification code');
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Verification failed');
       }
-    } catch (err) {
-      setError('An error occurred during verification');
+      
+      setError(null);
+    } catch (err: any) {
+      setError(err.message || 'An error occurred during verification');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Mock request new code function
-  const requestVerificationCode = async () => {
+  // Request verification code function
+  const requestVerificationCode = async (email: string) => {
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 800));
+      // Replace with actual API call when implemented
+      const response = await fetch('/api/auth/request-code', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to request verification code');
+      }
+      
       setError(null);
-    } catch (err) {
-      setError('An error occurred requesting a new code');
+    } catch (err: any) {
+      setError(err.message || 'An error occurred requesting a new code');
     } finally {
       setIsLoading(false);
     }
@@ -146,10 +162,34 @@ export const AuthProvider: React.FC<{children: ReactNode}> = ({ children }) => {
   
   // Check for existing user on mount
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
+    const checkAuthStatus = async () => {
+      try {
+        // Check if token exists
+        const token = localStorage.getItem('token');
+        
+        if (!token) {
+          setIsLoading(false);
+          return;
+        }
+        
+        // Validate token by getting current user
+        const currentUser = await authService.getCurrentUser();
+        
+        if (currentUser) {
+          setUser(currentUser);
+        } else {
+          // Token is invalid, remove it
+          localStorage.removeItem('token');
+        }
+      } catch (err) {
+        console.error('Auth check error:', err);
+        localStorage.removeItem('token');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    checkAuthStatus();
   }, []);
   
   return (
