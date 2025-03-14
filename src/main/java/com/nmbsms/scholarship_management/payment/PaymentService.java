@@ -35,7 +35,6 @@ public class PaymentService {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("Fee control number must be exactly 12 digits.");
         }
-
         Optional<SignUp> userOptional = signUpRepository.findByEmail(email);
         if (!userOptional.isPresent()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -70,7 +69,6 @@ public class PaymentService {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("NHIF control number must be exactly 12 digits.");
         }
-
         Optional<SignUp> userOptional = signUpRepository.findByEmail(email);
         if (!userOptional.isPresent()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
