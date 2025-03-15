@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
-import { authService } from '../services/authService';
+import authService, { ProfileData, SignupData } from '../services/authService';
+import { ROUTES } from '@/constants/routes';
 
 interface User {
   id: string;
@@ -10,15 +11,16 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
-  signupData: any | null;
+  signupData: SignupData | null;
   isLoading: boolean;
   error: string | null;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  register: (userData: any) => Promise<string>;
+  register: (userData: SignupData) => Promise<string>;
   verifyEmail: (email: string, code: string) => Promise<void>;
   requestVerificationCode: (email: string) => Promise<void>;
+  completeProfile: (profileData: ProfileData) => Promise<void>;
 }
 
 // Create context with default values
@@ -33,163 +35,167 @@ export const AuthContext = createContext<AuthContextType>({
   register: async () => "",
   verifyEmail: async () => {},
   requestVerificationCode: async () => {},
+  completeProfile: async () => {},
 });
 
 export const AuthProvider: React.FC<{children: ReactNode}> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [signupData, setSignupData] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true); // Start with loading true to check auth on mount
+  const [signupData, setSignupData] = useState<SignupData | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  // Real login function using authService
+  // Generic error handler
+
+  // Login function using real API
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     setError(null);
-    
     try {
       const response = await authService.login({ email, password });
       
-      // Store token
-      localStorage.setItem('token', response.token);
-      
-      // Set user
+      // JWT cookie is handled by the browser automatically
+      // Only save user data
       setUser(response.user);
+      localStorage.setItem('user', JSON.stringify(response.user));
       
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to login. Please check your credentials.');
+      const errorMessage = err.response?.data?.message || 'An error occurred during login';
+      setError(errorMessage);
+      throw err;
     } finally {
       setIsLoading(false);
     }
   };
   
-  // Real logout function
+  // Logout function using real API
   const logout = async () => {
     setIsLoading(true);
     try {
       await authService.logout();
-      setUser(null);
     } catch (err) {
-      console.error('Logout error:', err);
+      console.error("Error during logout:", err);
     } finally {
+      // Clear local state
+      setUser(null);
+      localStorage.removeItem('user');
       setIsLoading(false);
     }
   };
 
-  // Register function - implement with API
-  const register = async (userData: any) => {
+  // Register function using real API
+  const register = async (userData: SignupData) => {
     setIsLoading(true);
+    setError(null);
     try {
-      // Replace with actual API call when implemented
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(userData),
-      });
-      
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.message || 'Registration failed');
-      }
-      
       setSignupData(userData);
-      setError(null);
-      return "Registration successful";
+      
+      // Return a redirect path instead of just a message
+      return ROUTES.VERIFY_EMAIL;
     } catch (err: any) {
-      const errorMessage = err.message || 'An error occurred during registration';
+      const errorMessage = err.response?.data?.message || 'An error occurred during registration';
       setError(errorMessage);
-      return errorMessage;
+      throw err;
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Email verification function - implement with API
+  // Verify email function using real API
   const verifyEmail = async (email: string, code: string) => {
     setIsLoading(true);
+    setError(null);
     try {
-      // Replace with actual API call when implemented
-      const response = await fetch('/api/auth/verify-email', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, code }),
+      console.log('AuthContext: Verifying email:', email, 'with code:', code);
+      
+      // Fix: Pass separate parameters properly as an object
+      await authService.verifyEmail({ 
+        email: email, 
+        code: code 
       });
       
-      const data = await response.json();
+      console.log('Verification successful');
+    } catch (err: any) {
+      console.error('Verification error in AuthContext:', err);
+      let errorMessage = 'An error occurred during verification';
       
-      if (!response.ok) {
-        throw new Error(data.message || 'Verification failed');
+      if (err instanceof Error) {
+        errorMessage = err.message;
       }
       
-      setError(null);
-    } catch (err: any) {
-      setError(err.message || 'An error occurred during verification');
+      setError(errorMessage);
+      throw err;
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Request verification code function
+  // Request verification code function using real API
   const requestVerificationCode = async (email: string) => {
     setIsLoading(true);
+    setError(null);
     try {
-      // Replace with actual API call when implemented
-      const response = await fetch('/api/auth/request-code', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email }),
-      });
+      await authService.requestVerificationCode(email);
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || 'An error occurred requesting a new code';
+      setError(errorMessage);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Complete profile function using real API
+  const completeProfile = async (profileData: ProfileData) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      console.log('AuthContext: Completing profile with data:', profileData);
       
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to request verification code');
+      // Make sure we're not missing email
+      if (!profileData.email) {
+        throw new Error('Email is required but missing');
       }
       
-      setError(null);
+      const response = await authService.completeProfile(profileData);
+      console.log('Profile completion response:', response);
+      
+      return response;
     } catch (err: any) {
-      setError(err.message || 'An error occurred requesting a new code');
+      console.error('Error in completeProfile:', err);
+      const errorMessage = err.response?.data || 'An error occurred completing your profile';
+      setError(errorMessage);
+      throw err;
     } finally {
       setIsLoading(false);
     }
   };
   
-  // Check for existing user on mount
+  // Check for existing user on mount and validate token
   useEffect(() => {
-    const checkAuthStatus = async () => {
+    const checkAuth = async () => {
+      const storedUser = localStorage.getItem('user');
+      
+      if (!storedUser) {
+        return;
+      }
+      
       try {
-        // Check if token exists
-        const token = localStorage.getItem('token');
-        
-        if (!token) {
-          setIsLoading(false);
-          return;
-        }
-        
-        // Validate token by getting current user
-        const currentUser = await authService.getCurrentUser();
-        
-        if (currentUser) {
-          setUser(currentUser);
-        } else {
-          // Token is invalid, remove it
-          localStorage.removeItem('token');
-        }
+        setIsLoading(true);
+        // Verify the token is still valid by getting current user
+        // Cookie will be sent automatically
+        const response = await authService.getCurrentUser();
+        setUser(response.user);
+        localStorage.setItem('user', JSON.stringify(response.user));
       } catch (err) {
-        console.error('Auth check error:', err);
-        localStorage.removeItem('token');
+        // If there's an error, token is likely invalid
+        setUser(null);
+        localStorage.removeItem('user');
       } finally {
         setIsLoading(false);
       }
     };
     
-    checkAuthStatus();
+    checkAuth();
   }, []);
   
   return (
@@ -204,7 +210,8 @@ export const AuthProvider: React.FC<{children: ReactNode}> = ({ children }) => {
         logout,
         register,
         verifyEmail,
-        requestVerificationCode
+        requestVerificationCode,
+        completeProfile
       }}
     >
       {children}
@@ -212,7 +219,7 @@ export const AuthProvider: React.FC<{children: ReactNode}> = ({ children }) => {
   );
 };
 
-// Add a hook for easy access
+// Use the existing hook
 export const useAuth = () => {
   const context = React.useContext(AuthContext);
   if (context === undefined) {

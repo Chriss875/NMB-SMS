@@ -56,7 +56,7 @@ const App: React.FC = () => {
               </Route>
             </Route>
             
-            {/* Root path redirects to login */}
+            {/* Root path redirects to profile or login depending on auth state */}
             <Route path="/" element={<Navigate to={ROUTES.PROFILE} replace />} />
             
             {/* Catch-all redirect */}

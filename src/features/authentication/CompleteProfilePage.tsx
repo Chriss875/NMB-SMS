@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -19,21 +19,31 @@ const CompleteProfilePage: React.FC = () => {
   
   // Form state
   const [formError, setFormError] = useState<string | null>(null);
-  const { isLoading, error } = useAuth();
+  const { isLoading, error, completeProfile } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
   
-  // Extract email from state (passed from verify-email page)
-  const email = location.state?.email || '';
-  
+  // Replace the current email retrieval with sessionStorage
+  const [email, setEmail] = useState<string>('');
+
   useEffect(() => {
-    // If no email is provided, redirect back to signup
-    if (!email) {
+    // Get the email from sessionStorage
+    const storedEmail = sessionStorage.getItem('verifiedEmail');
+    
+    if (storedEmail) {
+      setEmail(storedEmail);
+      console.log('Retrieved email from storage:', storedEmail);
+    } else {
+      console.error('No email found in storage, redirecting to signup');
       navigate('/signup');
     }
-  }, [email, navigate]);
+  }, [navigate]);
   
   const validateForm = () => {
+    if (!email) {
+      setFormError('Email is required but missing. Please go back to the sign-up page.');
+      return false;
+    }
+  
     if (!name.trim()) {
       setFormError('Name is required');
       return false;
@@ -85,6 +95,7 @@ const CompleteProfilePage: React.FC = () => {
     return true;
   };
   
+  // Update the handleSubmit function to use the completeProfile API
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -93,11 +104,10 @@ const CompleteProfilePage: React.FC = () => {
     }
     
     try {
-      // Create profile data object
+      // Create profile data with extensive logging
       const profileData = {
-        id: Date.now().toString(), // Generate a temporary ID
         name,
-        email,
+        email, // This is the critical field
         mobilePhone,
         universityName,
         universityRegistrationID,
@@ -108,21 +118,27 @@ const CompleteProfilePage: React.FC = () => {
         enrollmentStatus: 'Active'
       };
       
-      // Store in localStorage for now (will be replaced by API calls later)
-      localStorage.setItem('profileData', JSON.stringify(profileData));
+      // Log complete submission data
+      console.log('SUBMITTING PROFILE DATA:', {
+        ...profileData,
+        emailExists: !!email,
+        emailValue: email
+      });
       
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await completeProfile(profileData);
       
-      // Redirect to login with success message
+      // Clear session storage on success
+      sessionStorage.removeItem('verifiedEmail');
+      
       navigate('/login', { 
         state: { 
-          profileSuccess: true,
+          profileSuccess: true, 
           message: 'Your profile has been set up successfully! You can now sign in.' 
         } 
       });
     } catch (err) {
-      setFormError('Failed to save profile data');
+      console.error('Failed to save profile:', err);
+      setFormError('Failed to save profile data. Please try again.');
     }
   };
   

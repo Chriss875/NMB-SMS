@@ -15,22 +15,37 @@ const SignUpPage: React.FC = () => {
   const navigate = useNavigate();
   
   const validateForm = () => {
-    // Email validation
-    const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+    if (!email) {
+      setFormError('Email is required');
+      return false;
+    }
+    
+    if (!password) {
+      setFormError('Password is required');
+      return false;
+    }
+    
+    if (!confirmPassword) {
+      setFormError('Please confirm your password');
+      return false;
+    }
+    
+    // Check if passwords match
+    if (password !== confirmPassword) {
+      setFormError('Passwords do not match');
+      return false;
+    }
+    
+    // Email validation with regex
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       setFormError('Please enter a valid email address');
       return false;
     }
     
-    // Password validation (minimum 8 characters)
+    // Password complexity validation
     if (password.length < 8) {
       setFormError('Password must be at least 8 characters long');
-      return false;
-    }
-    
-    // Password matching
-    if (password !== confirmPassword) {
-      setFormError('Passwords do not match');
       return false;
     }
     
@@ -41,16 +56,26 @@ const SignUpPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    console.log('Submitting signup form with:', { email, passwordsMatch: password === confirmPassword });
+
     if (!validateForm()) {
       return;
     }
     
     try {
-      await register({ email, password });
-      // Redirect to verification page with email in state
-      navigate('/verify-email', { state: { email } });
-    } catch (err) {
-      // Error is handled in AuthContext
+      // Register and get the redirect path
+      const redirectPath = await register({
+        email,
+        password,
+        confirmPassword
+      });
+      
+      // Navigate to the verify email page with the email in state
+      console.log('Registration successful, navigating to verify email with:', { email });
+      navigate(redirectPath, { state: { email } });
+    } catch (err: any) {
+      console.error('Registration error:', err);
+      // Error is already handled by the auth context
     }
   };
   

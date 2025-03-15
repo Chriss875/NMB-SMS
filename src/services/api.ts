@@ -1,36 +1,45 @@
-/// <reference types="vite/client" />
+import axios from 'axios';
 
-interface ImportMeta {
-  readonly env: {
-    readonly VITE_API_URL?: string;
-    // Add other environment variables you use
-    readonly [key: string]: any;
-  };
-}
+// API base URL
+const API_URL = import.meta.env.VITE_API_URL || '/api'; // Updated to use relative path
+console.log('API service using URL:', API_URL);
 
-import axios, { AxiosInstance, AxiosError } from 'axios';
-
-// Base API setup
-const api: AxiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api',
+// Create axios instance with default config
+export const api = axios.create({
+  baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true, // Enable cookies
 });
 
-// Add request interceptor for auth tokens, etc.
+// Add token to all requests if available
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('authToken');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// Add this to your API configuration
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+    console.log('Outgoing request:', { 
+      url: config.url,
+      method: config.method,
+      data: config.data,
+      params: config.params,
+      headers: config.headers
+    });
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    return Promise.reject(error);
+  }
 );
 
-// Add response interceptor for handling errors
+// Handle common error cases
 api.interceptors.response.use(
   (response) => {
     // Validate that the response contains valid JSON data when expected
@@ -41,11 +50,12 @@ api.interceptors.response.use(
     }
     return response;
   },
-  (error: AxiosError) => {
-    // Handle 401 Unauthorized errors
-    if (error.response?.status === 401) {
-      // Clear token if it's unauthorized
-      localStorage.removeItem('token');
+  (error) => {
+    // Handle unauthorized errors (token expired)
+    if (error.response && error.response.status === 401) {
+      // Clear auth data
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('user');
       
       // Redirect to login if not already there 
       if (window.location.pathname !== '/login') {
@@ -80,5 +90,3 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-
-export { api };
