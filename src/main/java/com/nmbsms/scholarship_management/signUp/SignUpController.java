@@ -3,7 +3,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import java.util.HashMap;
 import org.springframework.http.HttpHeaders;
+import java.util.Collections;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -42,24 +45,26 @@ public class SignUpController {
     }
 
     @PostMapping("/login")
-public ResponseEntity<String> login(@RequestParam String email, @RequestParam String password) {
-    String result = signupService.login(email, password);
-    if (!result.equals("Invalid credentials")) {
-        ResponseCookie jwtCookie = ResponseCookie.from("jwt", result)
-            .httpOnly(true)
-            .secure(true)
-            .path("/")
-            .maxAge(24 * 60 * 60)
-            .sameSite("Strict")
-            .build();
-            
-        return ResponseEntity.ok()
-            .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
-            .body("Login successful");
+    public ResponseEntity<?> login(@RequestBody LoginDTO loginDTO) {
+    String result = signupService.login(loginDTO);
+    if (result.equals("Invalid credentials")) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+            .body(Collections.singletonMap("message", "Invalid credentials"));
     }
     
-    return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-        .body(result);
+    ResponseCookie jwtCookie = ResponseCookie.from("jwt", result)
+        .httpOnly(true)
+        .secure(true)
+        .path("/")
+        .maxAge(24 * 60 * 60)
+        .sameSite("Strict")
+        .build();
+    Map<String, String> response = new HashMap<>();
+    response.put("message", "Login successful");
+    
+    return ResponseEntity.ok()
+        .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
+        .body(response);
 }
     
     @PostMapping("/reset-password")

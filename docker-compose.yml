@@ -1,0 +1,43 @@
+services:
+  mysql:
+    container_name: mysql
+    image: mysql:8.0
+    platform: linux/arm64
+    environment:
+      MYSQL_ROOT_PASSWORD: 12345678
+      MYSQL_DATABASE: scholarship_management_db
+      MYSQL_USER: root
+      MYSQL_PASSWORD: 12345678
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3309:3306"
+    networks:
+      - mysql
+    restart: unless-stopped
+
+  phpmyadmin:
+    container_name: phpmyadmin
+    image: phpmyadmin/phpmyadmin
+    platform: linux/arm64
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_ARBITRARY: 1
+    volumes:
+      - phpmyadmin_data:/var/www/html
+    ports:
+      - "8080:80"
+    networks:
+      - mysql
+    restart: unless-stopped
+    depends_on:
+      - mysql
+
+networks:
+  mysql:
+    driver: bridge
+
+volumes:
+  mysql_data:
+  phpmyadmin_data:

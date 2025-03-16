@@ -49,30 +49,51 @@ public class SignUpService {
     }
 
     public String completeSignUp(SignUpDTO signUpDTO){
-        SignUp student= new SignUp();
-        student.setName(signUpDTO.getName());
-        student.setSex(signUpDTO.getSex());
-        student.setPhoneNumber(signUpDTO.getPhoneNumber());
-        student.setUniversityName(signUpDTO.getUniversityName());
-        student.setUniversityRegistrationId(signUpDTO.getUniversityRegistrationId());
-        student.setCourseProgrammeName(signUpDTO.getCourseProgrammeName());
-        student.setEnrolledYear(signUpDTO.getEnrolledYear());
-        student.setBatchNo(signUpDTO.getBatchNo());
-        signUpRepository.save(student);
-        return "Profile created successfully";
+        Optional<SignUp> existingUser = signUpRepository.findByEmail(signUpDTO.getEmail());
+
+        if(existingUser.isPresent()){
+            SignUp student = existingUser.get();
+            student.setEmail(signUpDTO.getEmail());
+            student.setName(signUpDTO.getName());
+            student.setSex(signUpDTO.getSex());
+            student.setPhoneNumber(signUpDTO.getPhoneNumber());
+            student.setUniversityName(signUpDTO.getUniversityName());
+            student.setUniversityRegistrationId(signUpDTO.getUniversityRegistrationId());
+            student.setCourseProgrammeName(signUpDTO.getCourseProgrammeName());
+            student.setEnrolledYear(signUpDTO.getEnrolledYear());
+            student.setBatchNo(signUpDTO.getBatchNo());
+    
+            signUpRepository.save(student);
+            return "Profile created successfully";
+        } else {
+            throw new IllegalArgumentException("User not found");
+        }
     }
 
-    public String login(String email,String password){
-        Optional<SignUp> user=signUpRepository.findByEmail(email);
-        if(user.isEmpty()){
-            return "Invalid credentials";
-        }
-        if(passwordEncoder.matches(password, user.get().getPassword())){
-            String token = jwtUtil.generateToken(email);
-            return token;
-        }
+    LoginDTO loginDTO= new LoginDTO();
+    public String login(LoginDTO loginDTO){
+    if (loginDTO == null || loginDTO.getEmail() == null || loginDTO.getPassword() == null) {
         return "Invalid credentials";
     }
+    String email = loginDTO.getEmail().trim();
+    String password = loginDTO.getPassword();
+    Optional<SignUp> userOptional = signUpRepository.findByEmail(email);
+    if (userOptional.isEmpty()) {
+        System.out.println("User not found with email: " + email);
+        return "Invalid credentials";
+    }
+    SignUp user = userOptional.get();
+    boolean passwordMatches = passwordEncoder.matches(password, user.getPassword());
+    System.out.println("Password match result for user " + email + ": " + passwordMatches);
+    if (passwordMatches) {
+        String token = jwtUtil.generateToken(email);
+        System.out.println("Generated token for user: " + email);
+        return token;
+    } else {
+        System.out.println("Password mismatch for user: " + email);
+        return "Invalid credentials";
+    }
+}
 
     public String resetPassword(String email, String newPassword){
         Optional<SignUp> user= signUpRepository.findByEmail(email);
@@ -85,4 +106,3 @@ public class SignUpService {
         return "Password reset successfully";
     }
     }
-
