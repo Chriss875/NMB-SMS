@@ -1,38 +1,53 @@
+
 services:
+  
   mysql:
-    container_name: mysql
-    image: mysql:8.0
-    platform: linux/arm64
+    image: mysql:8.0.41
     environment:
-      MYSQL_ROOT_PASSWORD: 12345678
-      MYSQL_DATABASE: scholarship_management_db
-      MYSQL_USER: root
-      MYSQL_PASSWORD: 12345678
+      - MYSQL_ROOT_PASSWORD=12345678
+      - MYSQL_DATABASE=scholarship_management_db
+    ports:
+      - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+    networks:
+      - mysql
+    restart: unless-stopped
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
-      - "3309:3306"
+      - "8081:8080"
+    depends_on:
+      - mysql
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/scholarship_management_db?autoReconnect=true&useSSL=false
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=12345678
     networks:
       - mysql
     restart: unless-stopped
 
   phpmyadmin:
-    container_name: phpmyadmin
     image: phpmyadmin/phpmyadmin
-    platform: linux/arm64
+    container_name: phpmyadmin
+    platform: linux/amd64
     environment:
-      PMA_HOST: mysql
-      PMA_PORT: 3306
-      PMA_ARBITRARY: 1
-    volumes:
-      - phpmyadmin_data:/var/www/html
+      - PMA_HOST=mysql
+      - PMA_PORT=3306
+      - PMA_ARBITRARY=1
     ports:
       - "8080:80"
+    volumes:
+      - phpmyadmin_data:/var/www/html
+    depends_on:
+      - mysql
     networks:
       - mysql
     restart: unless-stopped
-    depends_on:
-      - mysql
 
 networks:
   mysql:
