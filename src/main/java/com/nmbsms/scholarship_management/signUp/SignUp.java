@@ -41,4 +41,7 @@ public class SignUp {
 
     @Column(nullable=true)
     private String enrollmentStatus;
+    private boolean profileCompleted;
+    private UserRoles role;
+    
 }

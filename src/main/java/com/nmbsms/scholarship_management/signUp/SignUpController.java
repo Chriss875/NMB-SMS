@@ -46,13 +46,13 @@ public class SignUpController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginDTO loginDTO) {
-    String result = signupService.login(loginDTO);
-    if (result.equals("Invalid credentials")) {
+    LoginResponseDTO result = signupService.login(loginDTO);
+    if (result.getToken().equals("Invalid credentials")) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
             .body(Collections.singletonMap("message", "Invalid credentials"));
     }
     
-    ResponseCookie jwtCookie = ResponseCookie.from("jwt", result)
+    ResponseCookie jwtCookie = ResponseCookie.from("jwt", result.getToken())
         .httpOnly(true)
         .secure(true)
         .path("/")
@@ -61,10 +61,10 @@ public class SignUpController {
         .build();
     Map<String, String> response = new HashMap<>();
     response.put("message", "Login successful");
-    
+
     return ResponseEntity.ok()
         .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
-        .body(response);
+        .body(result);
 }
     
     @PostMapping("/reset-password")

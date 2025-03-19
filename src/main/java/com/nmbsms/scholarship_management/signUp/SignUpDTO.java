@@ -13,8 +13,7 @@ public class SignUpDTO {
     @NotBlank(message="Email is mandatory")
     @Email
     private String email;
-
-    @NotBlank(message="Paasword cannot be blank")
+    @NotBlank(message="Password cannot be blank")
     private String password;
     private String token;
     private String name;
@@ -25,5 +24,5 @@ public class SignUpDTO {
     private String courseProgrammeName;
     private String enrolledYear;
     private Integer batchNo;
-    
+
 }

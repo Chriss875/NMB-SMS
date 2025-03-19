@@ -3,6 +3,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.Optional;
 import com.nmbsms.security.JwtService;
+
+
 @Service
 public class SignUpService {
     private final SignUpRepository signUpRepository;
@@ -61,7 +63,8 @@ public class SignUpService {
             student.setCourseProgrammeName(signUpDTO.getCourseProgrammeName());
             student.setEnrolledYear(signUpDTO.getEnrolledYear());
             student.setBatchNo(signUpDTO.getBatchNo());
-    
+            student.setProfileCompleted(true);
+            student.setRole(UserRoles.STUDENT);
             signUpRepository.save(student);
             return "Profile created successfully";
         } else {
@@ -70,28 +73,30 @@ public class SignUpService {
     }
 
     LoginDTO loginDTO= new LoginDTO();
-    public String login(LoginDTO loginDTO){
+
+    public LoginResponseDTO login(LoginDTO loginDTO){
     if (loginDTO == null || loginDTO.getEmail() == null || loginDTO.getPassword() == null) {
-        return "Invalid credentials";
+        throw new IllegalArgumentException("Invalid credentials");
     }
+
     String email = loginDTO.getEmail().trim();
     String password = loginDTO.getPassword();
     Optional<SignUp> userOptional = signUpRepository.findByEmail(email);
+
     if (userOptional.isEmpty()) {
-        System.out.println("User not found with email: " + email);
-        return "Invalid credentials";
+        throw new IllegalArgumentException("Invalid credentials");
     }
+
     SignUp user = userOptional.get();
     boolean passwordMatches = passwordEncoder.matches(password, user.getPassword());
-    System.out.println("Password match result for user " + email + ": " + passwordMatches);
+
     if (passwordMatches) {
         String token = jwtUtil.generateToken(email);
-        System.out.println("Generated token for user: " + email);
-        return token;
+        return new LoginResponseDTO(token, user);
     } else {
-        System.out.println("Password mismatch for user: " + email);
-        return "Invalid credentials";
+        throw new IllegalArgumentException("Invalid credentials");
     }
+
 }
 
     public String resetPassword(String email, String newPassword){
