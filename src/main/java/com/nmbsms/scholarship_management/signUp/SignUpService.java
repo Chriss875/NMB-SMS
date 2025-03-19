@@ -3,15 +3,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.Optional;
 import com.nmbsms.security.JwtService;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.HashMap;
 
 @Service
 public class SignUpService {
     private final SignUpRepository signUpRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtUtil;
-    private Map<String, String> tempPasswords= new HashMap<>();
+    private static final Map<String, String> tempPasswords= new HashMap<>();
 
     SignUpDTO signUpDTO= new SignUpDTO();
 
@@ -22,32 +22,36 @@ public class SignUpService {
     }
 
     public String initialSignUp(SignUpDTO signUpDTO){
-    Optional<SignUp> existingStudent = signUpRepository.findByEmail(signUpDTO.getEmail());
-    if (existingStudent.isEmpty()) {
-        return "Email not found. Contact admin for assistance.";
-    }
-    if (!signUpDTO.getPassword().equals(signUpDTO.getConfirmPassword())) {
-        return "Passwords do not match";
-    }
-    String encodedPassword= passwordEncoder.encode(signUpDTO.getPassword());
-    tempPasswords.put(signUpDTO.getEmail(),encodedPassword);
-    return "Proceed to token verification";
-    }
-    
-    public String verifyToken(String email, String token){
-    Optional<SignUp> studentOpt = signUpRepository.findByEmailAndToken(email, token);
-    if (studentOpt.isEmpty()) {
-        return "Invalid token";
-    }
-    String encodedPassword= tempPasswords.get(email);
-    SignUp student = studentOpt.get();
-    student.setPassword(encodedPassword);
-    student.setToken(null);
-    signUpRepository.save(student);
-    tempPasswords.remove(email);
-    return "Token verified successfully";
+        if(signUpDTO.getEmail().isEmpty() || signUpDTO.getToken().isEmpty()) {
+            return "Invalid credentials";
+        }
+        Optional<SignUp> existingStudent=signUpRepository.findByEmailAndToken(signUpDTO.getEmail(), signUpDTO.getToken());
+        if(existingStudent.isPresent()){
+            SignUp student=existingStudent.get();
+            student.setToken(null);
+            signUpRepository.save(student);
+            return "Authorization successful";
+        }
+        return "Invalid credentials";
     }
 
+    public String setPassword(SignUpDTO signUpDTO){
+        if(signUpDTO.getPassword().isEmpty() || signUpDTO.getConfirmPassword().isEmpty()){
+            return "Invalid credentials";
+        }
+        if(!signUpDTO.getPassword().equals(signUpDTO.getConfirmPassword())){
+            return "Passwords do not match";
+        }
+        Optional<SignUp> existingStudent=signUpRepository.findByEmail(signUpDTO.getEmail());
+        if(existingStudent.isEmpty()){
+            return "Invalid credentials";
+        }
+        SignUp student=existingStudent.get();
+        student.setPassword(passwordEncoder.encode(signUpDTO.getPassword()));
+        signUpRepository.save(student);
+        return "Password set successfully";
+    }
+    
     public String completeSignUp(SignUpDTO signUpDTO){
         Optional<SignUp> existingUser = signUpRepository.findByEmail(signUpDTO.getEmail());
 

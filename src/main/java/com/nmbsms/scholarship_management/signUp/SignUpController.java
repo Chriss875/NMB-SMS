@@ -20,16 +20,16 @@ public class SignUpController {
     @PostMapping("/signup/initial")
     public ResponseEntity<String> initialSignUp(@RequestBody SignUpDTO signUpDTO){
         String result= signupService.initialSignUp(signUpDTO);
-        if(result.contains("Proceed to token verification")){
+        if(result.contains("Authorization successful")){
             return ResponseEntity.ok(result);
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);
     }
 
-    @PostMapping("/signup/verify-token")
-    public ResponseEntity<String> verifyToken(@RequestParam String email, @RequestParam String token){
-        String result= signupService.verifyToken(email,token);
-        if(result.contains("Token verified successfully")){
+    @PostMapping("/signup/set-password")
+    public ResponseEntity<String> setPassword(@RequestBody SignUpDTO signUpDTO){
+        String result= signupService.setPassword(signUpDTO);
+        if(result.contains("Password set successfully")){
             return ResponseEntity.ok(result);
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);
