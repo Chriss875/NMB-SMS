@@ -104,4 +104,8 @@ public class SignUpService {
         signUpRepository.save(student);
         return "Password reset successfully";
     }
+
+    public Optional<SignUp> getUserByEmail(String email) {
+        return signUpRepository.findByEmail(email);
     }
+}
