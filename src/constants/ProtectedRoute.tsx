@@ -1,11 +1,12 @@
 import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { Loader2 } from 'lucide-react';
+import { ROUTES } from '@/constants/routes';
 
 const ProtectedRoute: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
-
+  
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -14,11 +15,12 @@ const ProtectedRoute: React.FC = () => {
       </div>
     );
   }
-
+  
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    console.log('Not authenticated, redirecting to login');
+    return <Navigate to={ROUTES.LOGIN} replace />;
   }
-
+  
   return <Outlet />;
 };
 

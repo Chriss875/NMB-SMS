@@ -1,6 +1,5 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import authService, { ProfileData, SignupData } from '../services/authService';
-import { ROUTES } from '@/constants/routes';
 
 interface User {
   id: string;
@@ -17,9 +16,8 @@ interface AuthContextType {
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  register: (userData: SignupData) => Promise<string>;
-  verifyEmail: (email: string, code: string) => Promise<void>;
-  requestVerificationCode: (email: string) => Promise<void>;
+  verifyEmail: (email: string, token: string) => Promise<void>;
+  setPassword: (email: string, password: string) => Promise<void>;
   completeProfile: (profileData: ProfileData) => Promise<void>;
 }
 
@@ -32,33 +30,39 @@ export const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
   login: async () => {},
   logout: async () => {},
-  register: async () => "",
   verifyEmail: async () => {},
-  requestVerificationCode: async () => {},
+  setPassword: async () => {},
   completeProfile: async () => {},
 });
 
 export const AuthProvider: React.FC<{children: ReactNode}> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [signupData, setSignupData] = useState<SignupData | null>(null);
+  const [signupData] = useState<SignupData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  // Generic error handler
-
-  // Login function using real API
+  // Login function 
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     setError(null);
     try {
+      console.log('Attempting login in AuthContext');
       const response = await authService.login({ email, password });
+      console.log('Login successful, response:', response);
       
-      // JWT cookie is handled by the browser automatically
-      // Only save user data
-      setUser(response.user);
-      localStorage.setItem('user', JSON.stringify(response.user));
-      
+      // The response now includes the user object directly
+      if (response.user) {
+        // Set user in state
+        setUser(response.user);
+        localStorage.setItem('user', JSON.stringify(response.user));
+        console.log('User data saved in state and localStorage:', response.user);
+      } else {
+        // Fallback in case user object is missing
+        console.error('Login response missing user data:', response);
+        throw new Error('Invalid response format: missing user data');
+      }
     } catch (err: any) {
+      console.error('Login error in AuthContext:', err);
       const errorMessage = err.response?.data?.message || 'An error occurred during login';
       setError(errorMessage);
       throw err;
@@ -67,7 +71,7 @@ export const AuthProvider: React.FC<{children: ReactNode}> = ({ children }) => {
     }
   };
   
-  // Logout function using real API
+  // Logout function 
   const logout = async () => {
     setIsLoading(true);
     try {
@@ -82,17 +86,28 @@ export const AuthProvider: React.FC<{children: ReactNode}> = ({ children }) => {
     }
   };
 
-  // Register function using real API
-  const register = async (userData: SignupData) => {
+  // Verify email function - using the provided token
+  const verifyEmail = async (email: string, token: string) => {
     setIsLoading(true);
     setError(null);
     try {
-      setSignupData(userData);
+      // Call the verify email endpoint with the email and token
+      const response = await authService.verifyEmail(email, token);
       
-      // Return a redirect path instead of just a message
-      return ROUTES.VERIFY_EMAIL;
+      // Store verified email for the next step
+      sessionStorage.setItem('verifiedEmail', email);
+      
+      return response;
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || 'An error occurred during registration';
+      console.error('Verification error in AuthContext:', err);
+      let errorMessage = 'An error occurred during verification';
+      
+      if (err instanceof Error) {
+        errorMessage = err.message;
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      }
+      
       setError(errorMessage);
       throw err;
     } finally {
@@ -100,25 +115,23 @@ export const AuthProvider: React.FC<{children: ReactNode}> = ({ children }) => {
     }
   };
 
-  // Verify email function using real API
-  const verifyEmail = async (email: string, code: string) => {
+  // Set password function - for creating password after email verification
+  const setPassword = async (email: string, password: string) => {
     setIsLoading(true);
     setError(null);
     try {
-      console.log('AuthContext: Verifying email:', email, 'with code:', code);
+      // Call the set password endpoint
+      await authService.setPassword(email, password);
       
-      // Fix: Pass separate parameters properly as an object
-      await authService.verifyEmail({ 
-        email: email, 
-        code: code 
-      });
-      
-      console.log('Verification successful');
+      console.log('Password set successfully for:', email);
     } catch (err: any) {
-      console.error('Verification error in AuthContext:', err);
-      let errorMessage = 'An error occurred during verification';
+      console.error('Error setting password:', err);
+      // More specific error message based on error type
+      let errorMessage = 'An error occurred setting your password';
       
-      if (err instanceof Error) {
+      if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.message) {
         errorMessage = err.message;
       }
       
@@ -129,22 +142,7 @@ export const AuthProvider: React.FC<{children: ReactNode}> = ({ children }) => {
     }
   };
 
-  // Request verification code function using real API
-  const requestVerificationCode = async (email: string) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      await authService.requestVerificationCode(email);
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.message || 'An error occurred requesting a new code';
-      setError(errorMessage);
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Complete profile function using real API
+  // Complete profile function
   const completeProfile = async (profileData: ProfileData) => {
     setIsLoading(true);
     setError(null);
@@ -208,9 +206,8 @@ export const AuthProvider: React.FC<{children: ReactNode}> = ({ children }) => {
         isAuthenticated: !!user,
         login,
         logout,
-        register,
         verifyEmail,
-        requestVerificationCode,
+        setPassword,
         completeProfile
       }}
     >

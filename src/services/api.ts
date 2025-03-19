@@ -1,17 +1,23 @@
-import axios from 'axios';
+/// <reference types="vite/client" />
 
-// API base URL
-const API_URL = import.meta.env.VITE_API_URL || '/api'; // Updated to use relative path
-console.log('API service using URL:', API_URL);
+interface ImportMeta {
+    readonly env: {
+      readonly VITE_API_URL?: string;
+      // Add other environment variables you use
+      readonly [key: string]: any;
+    };
+  }
+  
+  import axios, { AxiosInstance, AxiosError } from 'axios';
+  
+  // Base API setup
+  export const api: AxiosInstance = axios.create({
+    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8080/api',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
 
-// Create axios instance with default config
-export const api = axios.create({
-  baseURL: API_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  withCredentials: true, // Enable cookies
-});
 
 // Add token to all requests if available
 api.interceptors.request.use((config) => {

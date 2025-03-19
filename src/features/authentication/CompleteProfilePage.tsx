@@ -104,10 +104,10 @@ const CompleteProfilePage: React.FC = () => {
     }
     
     try {
-      // Create profile data with extensive logging
+      
       const profileData = {
         name,
-        email, // This is the critical field
+        email, 
         mobilePhone,
         universityName,
         universityRegistrationID,
@@ -118,7 +118,7 @@ const CompleteProfilePage: React.FC = () => {
         enrollmentStatus: 'Active'
       };
       
-      // Log complete submission data
+      
       console.log('SUBMITTING PROFILE DATA:', {
         ...profileData,
         emailExists: !!email,
@@ -127,7 +127,7 @@ const CompleteProfilePage: React.FC = () => {
       
       await completeProfile(profileData);
       
-      // Clear session storage on success
+      
       sessionStorage.removeItem('verifiedEmail');
       
       navigate('/login', { 

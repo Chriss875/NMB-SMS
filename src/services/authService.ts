@@ -1,14 +1,12 @@
 import axios from 'axios';
 import { api } from './api'; // Import the shared API instance
 
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
-
 // Type definitions for auth data
 export interface SignupData {
   email: string;
-  password: string;
-  confirmPassword: string; // Remove the '?' to make it required
+  password?: string;
+  confirmPassword?: string; // Make this optional
+  token?: string; // Add the token field
 }
 
 export interface ProfileData {
@@ -35,23 +33,14 @@ export interface User {
 const authService = {
   login: async ({ email, password }: { email: string; password: string }) => {
     try {
-      console.log('Attempting login with:', { email, urlUsed: `${API_URL}/auth/login` });
+      console.log('Attempting login with:', { email });
       const response = await api.post('/auth/login', { email, password });
       console.log('Login response:', response);
+      
+      // Return the data which should already include the user object
       return response.data;
-    } catch (error: unknown) {
-      // Type-safe error handling
-      if (axios.isAxiosError(error) && error.response) {
-        console.error('Login error details:', {
-          status: error.response.status,
-          statusText: error.response.statusText,
-          data: error.response.data
-        });
-      } else if (error instanceof Error) {
-        console.error('Login error:', error.message);
-      } else {
-        console.error('Unknown login error occurred');
-      }
+    } catch (error) {
+      console.error('Login error:', error);
       throw error;
     }
   },
@@ -59,7 +48,13 @@ const authService = {
   register: async (userData: SignupData) => {
     try {
       console.log('Registering user:', userData.email);
-      const response = await api.post('/auth/signup/initial', userData);
+      // This should match the /signup/initial endpoint
+      const response = await api.post('/auth/signup/initial', {
+        email: userData.email,
+        password: userData.password,
+        confirmPassword: userData.confirmPassword || userData.password,
+        token: userData.token // Make sure to include the token
+      });
       return response.data;
     } catch (error: unknown) {
       // Type-safe error handling
@@ -74,101 +69,56 @@ const authService = {
     }
   },
 
-  verifyEmail: async (emailOrParams: string | { email: string; code: string }, code?: string) => {
+  // Verify email with the token provided physically
+  verifyEmail: async (email: string, token: string) => {
     try {
-      let email: string;
-      let verificationCode: string;
-
-      // Handle both parameter styles (object or separate parameters)
-      if (typeof emailOrParams === 'string' && code) {
-        // Called with separate parameters: verifyEmail(email, code)
-        email = emailOrParams;
-        verificationCode = code;
-      } else if (typeof emailOrParams === 'object' && 'email' in emailOrParams && 'code' in emailOrParams) {
-        // Called with object parameter: verifyEmail({ email, code })
-        email = emailOrParams.email;
-        verificationCode = emailOrParams.code;
-      } else {
-        throw new Error('Invalid parameters for email verification');
-      }
-
-      console.log('Verifying email with code for:', email, 'Code:', verificationCode);
+      console.log('Verifying email:', email, 'with token');
       
-      // IMPORTANT: The backend expects form parameters (not JSON)
-      const formData = new URLSearchParams();
-      formData.append('email', email.trim());
-      formData.append('token', verificationCode.trim()); // Backend expects 'token', not 'code'
-      
-      console.log('Sending verification with form data:', Object.fromEntries(formData.entries()));
-      
-      const response = await api.post('/auth/signup/verify-token', formData, {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        }
+      // Call the initial signup endpoint with just email and token
+      const response = await api.post('/auth/signup/initial', { 
+        email, 
+        token 
       });
       
       return response.data;
-    } catch (error: unknown) {
-      // Type-safe error handling
-      if (axios.isAxiosError(error) && error.response) {
-        console.error('API error details:', error.response.data);
-        
-        // Check for specific API error messages
-        if (error.response.data === "Invalid token") {
-          throw new Error('The verification code is invalid or expired. Please request a new code.');
-        }
-        
-        // Generic error message for other cases
-        throw new Error(
-          typeof error.response.data === 'string' 
-            ? error.response.data 
-            : error.response.data?.message || 'Verification failed. Please try again.'
-        );
-      } else if (error instanceof Error) {
-        console.error('Error message:', error.message);
-        throw error;
-      } else {
-        console.error('Unknown error occurred');
-        throw new Error('Verification failed. Please try again.');
-      }
+    } catch (error) {
+      console.error('Email verification error:', error);
+      throw error;
     }
   },
 
-  requestVerificationCode: async (email: string) => {
+  // Set password after verification
+  setPassword: async (email: string, password: string) => {
     try {
-      console.log('Requesting verification code for:', email);
-      
-      // Send as form data to match backend expectations
-      const formData = new URLSearchParams();
-      formData.append('email', email.trim());
-      
-      const response = await api.post('/auth/request-verification', formData, {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        }
+      console.log('Setting password for:', email);
+      const response = await api.post('/auth/signup/set-password', {
+        email,
+        password,
       });
       
       return response.data;
+    } catch (error) {
+      console.error('Set password error:', error);
+      throw error;
+    }
+  },
+
+  // For backward compatibility
+  requestVerificationCode: async () => {
+    try {
+      console.log('This function is deprecated in the new flow');
+      // In the new flow, we don't need to request verification code
+      return { success: true, message: "Verification code would be sent" };
     } catch (error: unknown) {
       // Type-safe error handling
-      if (axios.isAxiosError(error) && error.response) {
-        console.error('API error details:', error.response.data);
-        
-        // Return user-friendly error message
-        if (typeof error.response.data === 'string') {
-          throw new Error(error.response.data);
-        } else if (error.response.data?.message) {
-          throw new Error(error.response.data.message);
-        }
-      }
-      
-      throw new Error('Failed to request verification code. Please try again.');
+      console.error('This function should not be used in the new flow');
+      throw new Error('This function is deprecated in the new flow');
     }
   },
 
   completeProfile: async (profileData: ProfileData) => {
     try {
-      // Validate email presence with better logging
+      // Validate email presence
       if (!profileData.email || profileData.email.trim() === '') {
         console.error('Email validation failed:', {
           emailValue: profileData.email,
@@ -177,24 +127,13 @@ const authService = {
         throw new Error('Email is required but missing or empty');
       }
       
-      console.log('Sending complete profile request with email:', profileData.email);
+      console.log('Completing profile for:', profileData.email);
       
-      // Copy data to ensure email is included
-      const dataToSend = {
-        ...profileData,
-        email: profileData.email.trim() // Ensure no whitespace
-      };
-      
-      const response = await api.post('/auth/signup/complete', dataToSend);
+      // This should match /signup/complete endpoint
+      const response = await api.post('/auth/signup/complete', profileData);
       return response.data;
-    } catch (error: unknown) {
-      if (axios.isAxiosError(error) && error.response) {
-        console.error('Profile completion error details:', error.response.data);
-      } else if (error instanceof Error) {
-        console.error('Profile completion error:', error);
-      } else {
-        console.error('Unknown error during profile completion');
-      }
+    } catch (error) {
+      console.error('Profile completion error:', error);
       throw error;
     }
   },
@@ -203,15 +142,8 @@ const authService = {
     try {
       const response = await api.get('/auth/me');
       return response.data;
-    } catch (error: unknown) {
-      // Type-safe error handling
-      if (axios.isAxiosError(error) && error.response) {
-        console.error('API error details:', error.response.data);
-      } else if (error instanceof Error) {
-        console.error('Error message:', error.message);
-      } else {
-        console.error('Unknown error occurred');
-      }
+    } catch (error) {
+      console.error('Get current user error:', error);
       throw error;
     }
   },
@@ -220,32 +152,24 @@ const authService = {
     try {
       const response = await api.post('/auth/logout');
       return response.data;
-    } catch (error: unknown) {
-      // Type-safe error handling
-      if (axios.isAxiosError(error) && error.response) {
-        console.error('API error details:', error.response.data);
-      } else if (error instanceof Error) {
-        console.error('Error message:', error.message);
-      } else {
-        console.error('Unknown error occurred');
-      }
+    } catch (error) {
+      console.error('Logout error:', error);
+      throw error;
     }
   },
   
   resetPassword: async (email: string, newPassword: string) => {
     try {
       console.log('Resetting password for:', email);
-      const response = await api.post('/auth/reset-password', { email, newPassword });
+      const response = await api.post('/auth/reset-password', null, {
+        params: {
+          email,
+          newPassword
+        }
+      });
       return response.data;
-    } catch (error: unknown) {
-      // Type-safe error handling
-      if (axios.isAxiosError(error) && error.response) {
-        console.error('API error details:', error.response.data);
-      } else if (error instanceof Error) {
-        console.error('Error message:', error.message);
-      } else {
-        console.error('Unknown error occurred');
-      }
+    } catch (error) {
+      console.error('Reset password error:', error);
       throw error;
     }
   }

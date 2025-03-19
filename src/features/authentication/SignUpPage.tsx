@@ -5,34 +5,18 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, UserPlus, ArrowLeft } from 'lucide-react';
+import { ROUTES } from '@/constants/routes';
 
 const SignUpPage: React.FC = () => {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [verificationCode, setVerificationCode] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
-  const { register, isLoading, error } = useAuth();
+  const { verifyEmail, isLoading, error } = useAuth();
   const navigate = useNavigate();
   
-  const validateForm = () => {
+  const validateEmail = () => {
     if (!email) {
       setFormError('Email is required');
-      return false;
-    }
-    
-    if (!password) {
-      setFormError('Password is required');
-      return false;
-    }
-    
-    if (!confirmPassword) {
-      setFormError('Please confirm your password');
-      return false;
-    }
-    
-    // Check if passwords match
-    if (password !== confirmPassword) {
-      setFormError('Passwords do not match');
       return false;
     }
     
@@ -43,39 +27,50 @@ const SignUpPage: React.FC = () => {
       return false;
     }
     
-    // Password complexity validation
-    if (password.length < 8) {
-      setFormError('Password must be at least 8 characters long');
-      return false;
-    }
-    
     setFormError(null);
     return true;
   };
   
+  const validateVerificationCode = (code: string) => {
+    if (!code || code.trim().length !== 6) {
+      return 'Please enter a valid 6-digit verification code';
+    }
+    return null;
+  };
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError(null);
     
-    console.log('Submitting signup form with:', { email, passwordsMatch: password === confirmPassword });
-
-    if (!validateForm()) {
+    // Validate email
+    if (!validateEmail()) {
+      return;
+    }
+    
+    // Validate verification code format
+    const validationError = validateVerificationCode(verificationCode);
+    if (validationError) {
+      setFormError(validationError);
       return;
     }
     
     try {
-      // Register and get the redirect path
-      const redirectPath = await register({
-        email,
-        password,
-        confirmPassword
-      });
+      // Call verifyEmail with explicitly named variables to avoid any confusion
+      const emailToVerify = email;
+      const codeToVerify = verificationCode.trim();
+      await verifyEmail(emailToVerify, codeToVerify);
       
-      // Navigate to the verify email page with the email in state
-      console.log('Registration successful, navigating to verify email with:', { email });
-      navigate(redirectPath, { state: { email } });
+      // Store email in sessionStorage to make it available across routes
+      sessionStorage.setItem('verifiedEmail', email);
+      
+      // Navigate to set password page
+      navigate(ROUTES.SET_PASSWORD, { 
+        state: { email },
+        replace: true
+      });
     } catch (err: any) {
-      console.error('Registration error:', err);
-      // Error is already handled by the auth context
+      console.error('Verification error:', err);
+      // Error should be handled by the auth context
     }
   };
   
@@ -114,34 +109,25 @@ const SignUpPage: React.FC = () => {
             </div>
             
             <div className="space-y-2">
-              <label htmlFor="password" className="text-sm font-medium leading-none">
-                Password
+              <label htmlFor="verificationCode" className="text-sm font-medium leading-none">
+                Verification Code
               </label>
               <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
+                id="verificationCode"
+                type="text"
+                inputMode="numeric"
+                pattern="\d*"
+                maxLength={6}
+                value={verificationCode}
+                onChange={(e) => setVerificationCode(e.target.value.replace(/[^\d]/g, ''))}
+                placeholder="Enter 6-digit code"
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
                 required
+                autoComplete="one-time-code"
               />
-              <p className="text-xs text-gray-500">Must be at least 8 characters</p>
-            </div>
-            
-            <div className="space-y-2">
-              <label htmlFor="confirmPassword" className="text-sm font-medium leading-none">
-                Confirm Password
-              </label>
-              <input
-                id="confirmPassword"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="••••••••"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
-                required
-              />
+              <p className="text-xs text-gray-500">
+                Enter the 6-digit verification code provided to you
+              </p>
             </div>
           </CardContent>
           
@@ -149,17 +135,17 @@ const SignUpPage: React.FC = () => {
             <Button 
               type="submit" 
               className="w-full" 
-              disabled={isLoading}
+              disabled={isLoading || verificationCode.length !== 6}
             >
               {isLoading ? (
                 <>
                   <span className="animate-spin mr-2">⟳</span>
-                  Creating Account...
+                  Verifying...
                 </>
               ) : (
                 <>
                   <UserPlus className="mr-2 h-4 w-4" />
-                  Sign Up
+                  Verify & Continue
                 </>
               )}
             </Button>

@@ -1,10 +1,13 @@
 // src/App.tsx
 import React, { Suspense } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ROUTES } from './constants/routes';
 import { Loader2 } from 'lucide-react';
 import { AuthProvider } from './contexts/AuthContext';
-import ProtectedRoute from './components/auth/ProtectedRoute';
+import { useAuth } from './hooks/useAuth';
+import ProtectedRoute from './constants/ProtectedRoute';
+import SetPasswordPage from './features/authentication/SetPasswordPage';
+import EmailVerifiedGuard from './features/authentication/EmailVerifiedGuard';
 
 // Pages
 import LoginPage from './features/authentication/login/LoginPage';
@@ -20,6 +23,7 @@ import MentorshipPage from './features/career-mentorship/MentorshipPage';
 import MessagingLayout from './features/messaging/pages/MessagingLayout';
 import AnnouncementsPage from './features/messaging/pages/AnnouncementsPage';
 import ChatsPage from './features/messaging/pages/ChatsPage';
+import CompleteProfileGuard from './features/authentication/CompleteProfileGuard';
 
 // Basic loading component
 const LoadingFallback = () => (
@@ -29,19 +33,46 @@ const LoadingFallback = () => (
   </div>
 );
 
+// Create a smart home page component that checks auth status
+const HomePage = () => {
+  const { isAuthenticated, isLoading } = useAuth();
+  
+  if (isLoading) {
+    return <LoadingFallback />;
+  }
+  
+  // If user is authenticated, go to profile
+  if (isAuthenticated) {
+    return <Navigate to={ROUTES.PROFILE} replace />;
+  }
+  
+  // Otherwise, go to login
+  return <Navigate to={ROUTES.LOGIN} replace />;
+};
+
 const App: React.FC = () => {
   return (
     <AuthProvider>
-      <BrowserRouter>
+      <Router>
         <Suspense fallback={<LoadingFallback />}>
           <Routes>
             {/* Public routes */}
             <Route path={ROUTES.LOGIN} element={<LoginPage />} />
             <Route path={ROUTES.SIGNUP} element={<SignUpPage />} />
-            <Route path={ROUTES.VERIFY_EMAIL} element={<VerifyEmailPage />} />
-            <Route path={ROUTES.COMPLETE_PROFILE} element={<CompleteProfilePage />} />
             
-            {/* Protected routes */}
+            {/* Protected by email verification */}
+            <Route element={<EmailVerifiedGuard />}>
+              <Route path={ROUTES.SET_PASSWORD} element={<SetPasswordPage />} />
+            </Route>
+            
+            {/* Protected by password setup - route to complete profile */}
+            <Route element={<CompleteProfileGuard />}>
+              <Route path={ROUTES.COMPLETE_PROFILE} element={<CompleteProfilePage />} />
+            </Route>
+            
+            <Route path={ROUTES.VERIFY_EMAIL} element={<VerifyEmailPage />} />
+            
+            {/* Protected routes - require full authentication */}
             <Route element={<ProtectedRoute />}>
               <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
               <Route path={ROUTES.RESULTS} element={<ResultsPage />} />
@@ -56,14 +87,14 @@ const App: React.FC = () => {
               </Route>
             </Route>
             
-            {/* Root path redirects to profile or login depending on auth state */}
-            <Route path="/" element={<Navigate to={ROUTES.PROFILE} replace />} />
+            {/* Root path with smart redirection based on auth status */}
+            <Route path="/" element={<HomePage />} />
             
-            {/* Catch-all redirect */}
-            <Route path="*" element={<Navigate to={ROUTES.PROFILE} replace />} />
+            {/* Catch-all redirect to HomePage which will handle redirection intelligently */}
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>
-      </BrowserRouter>
+      </Router>
     </AuthProvider>
   );
 };

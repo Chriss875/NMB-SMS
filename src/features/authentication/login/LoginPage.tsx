@@ -5,11 +5,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, LogIn } from 'lucide-react';
+import { ROUTES } from '@/constants/routes';
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { login, isLoading, error } = useAuth();
+  const { login, isAuthenticated, isLoading, error } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -22,14 +23,29 @@ const LoginPage: React.FC = () => {
       setSuccessMessage(location.state.message || 'Your account is ready! You can now sign in.');
     }
   }, [location.state]);
+
+  // If user is already logged in, redirect to profile
+  useEffect(() => {
+    if (isAuthenticated && !isLoading) {
+      console.log('Already authenticated, redirecting to profile');
+      navigate(ROUTES.PROFILE, { replace: true });
+    }
+  }, [isAuthenticated, isLoading, navigate]);
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      console.log('Login form submitted');
       await login(email, password);
-      navigate('/profile');
+      
+      // Force a small delay to ensure state updates are processed
+      setTimeout(() => {
+        console.log('Navigating to profile after successful login');
+        navigate(ROUTES.PROFILE, { replace: true });
+      }, 100);
     } catch (err) {
-      // Error is handled in AuthContext
+      console.error('Error during login submission:', err);
+      // Error already handled in AuthContext
     }
   };
   
