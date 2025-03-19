@@ -12,7 +12,6 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth")
-@RequestMapping("/api/auth")
 public class SignUpController {
 
     private final SignUpService signupService;
