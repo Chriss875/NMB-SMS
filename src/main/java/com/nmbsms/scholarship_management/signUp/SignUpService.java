@@ -3,15 +3,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.Optional;
 import com.nmbsms.security.JwtService;
-import java.util.Map;
-import java.util.HashMap;
-
 @Service
 public class SignUpService {
     private final SignUpRepository signUpRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtUtil;
-    private static final Map<String, String> tempPasswords= new HashMap<>();
 
     SignUpDTO signUpDTO= new SignUpDTO();
 
