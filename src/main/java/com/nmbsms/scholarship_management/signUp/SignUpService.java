@@ -24,7 +24,8 @@ public class SignUpService {
         Optional<SignUp> existingStudent=signUpRepository.findByEmailAndToken(signUpDTO.getEmail(), signUpDTO.getToken());
         if(existingStudent.isPresent()){
             SignUp student=existingStudent.get();
-            student.setToken(null);
+            student.setToken(signUpDTO.getToken());
+            student.setEmail(signUpDTO.getEmail());
             signUpRepository.save(student);
             return "Authorization successful";
         }
@@ -44,6 +45,7 @@ public class SignUpService {
         }
         SignUp student=existingStudent.get();
         student.setPassword(passwordEncoder.encode(signUpDTO.getPassword()));
+        student.setToken(null);
         signUpRepository.save(student);
         return "Password set successfully";
     }
