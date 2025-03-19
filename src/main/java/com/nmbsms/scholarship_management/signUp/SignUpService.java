@@ -33,11 +33,8 @@ public class SignUpService {
     }
 
     public String setPassword(SignUpDTO signUpDTO){
-        if(signUpDTO.getPassword().isEmpty() || signUpDTO.getConfirmPassword().isEmpty()){
+        if(signUpDTO.getPassword().isEmpty()|| signUpDTO.getEmail().isEmpty()){
             return "Invalid credentials";
-        }
-        if(!signUpDTO.getPassword().equals(signUpDTO.getConfirmPassword())){
-            return "Passwords do not match";
         }
         Optional<SignUp> existingStudent=signUpRepository.findByEmail(signUpDTO.getEmail());
         if(existingStudent.isEmpty()){

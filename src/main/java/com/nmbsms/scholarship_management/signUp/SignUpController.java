@@ -9,7 +9,7 @@ import java.util.Collections;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api")
 public class SignUpController {
     private final SignUpService signupService;
 
@@ -17,7 +17,7 @@ public class SignUpController {
         this.signupService = signupService;
     }
 
-    @PostMapping("/signup/initial")
+    @PostMapping("/authentication")
     public ResponseEntity<String> initialSignUp(@RequestBody SignUpDTO signUpDTO){
         String result= signupService.initialSignUp(signUpDTO);
         if(result.contains("Authorization successful")){

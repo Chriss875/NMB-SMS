@@ -16,8 +16,6 @@ public class SignUpDTO {
 
     @NotBlank(message="Paasword cannot be blank")
     private String password;
-
-    private String confirmPassword;
     private String token;
     private String name;
     private String sex;
