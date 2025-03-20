@@ -25,12 +25,19 @@ public class SignUp {
     private String password;
 
     private String token;
+
     private String name;
+
     private String sex;
+
     private String phoneNumber;
+
     private String universityName;
+
     private String universityRegistrationId;
+
     private String courseProgrammeName;
+
     private String enrolledYear;
 
     @Column(nullable=true)
@@ -41,7 +48,9 @@ public class SignUp {
 
     @Column(nullable=true)
     private String enrollmentStatus;
+
     private boolean profileCompleted;
+
     private UserRoles role;
     
 }
