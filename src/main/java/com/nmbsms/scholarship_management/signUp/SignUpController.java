@@ -9,7 +9,7 @@ import java.util.Collections;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping(path="/api/auth")
 public class SignUpController {
     private final SignUpService signupService;
 
@@ -18,8 +18,8 @@ public class SignUpController {
     }
 
     @PostMapping("/signup/initial")
-    public ResponseEntity<String> initialSignUp(@RequestBody SignUpDTO signUpDTO){
-        String result= signupService.initialSignUp(signUpDTO);
+    public ResponseEntity<String> initialSignUp(@RequestBody InitialSignUpDTO initialSignUpDTO){
+        String result= signupService.initialSignUp(initialSignUpDTO);
         if(result.contains("Authorization successful")){
             return ResponseEntity.ok(result);
         }
@@ -27,8 +27,8 @@ public class SignUpController {
     }
 
     @PostMapping("/signup/set-password")
-    public ResponseEntity<String> setPassword(@RequestBody SignUpDTO signUpDTO){
-        String result= signupService.setPassword(signUpDTO);
+    public ResponseEntity<String> setPassword(@RequestBody CreatePasswordDTO createPasswordDTO){
+        String result= signupService.setPassword(createPasswordDTO);
         if(result.contains("Password set successfully")){
             return ResponseEntity.ok(result);
         }
@@ -68,8 +68,8 @@ public class SignUpController {
 }
     
     @PostMapping("/reset-password")
-    public ResponseEntity<String> resetPassword(@RequestParam String email, @RequestParam String newPassword){
-        String result= signupService.resetPassword(email,newPassword);
+    public ResponseEntity<String> resetPassword(@RequestBody ResetPasswordDTO resetPasswordDTO){
+        String result= signupService.resetPassword(resetPasswordDTO);
         if(result.contains("Password reset successfully")){
             return ResponseEntity.ok(result);
         }

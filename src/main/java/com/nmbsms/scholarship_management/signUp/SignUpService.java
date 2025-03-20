@@ -12,6 +12,9 @@ public class SignUpService {
     private final JwtService jwtUtil;
 
     SignUpDTO signUpDTO= new SignUpDTO();
+    InitialSignUpDTO initialSignUpDTO= new InitialSignUpDTO();
+    CreatePasswordDTO createPasswordDTO= new CreatePasswordDTO();
+    ResetPasswordDTO resetPasswordDTO= new ResetPasswordDTO();
 
     public SignUpService(SignUpRepository signUpRepository, PasswordEncoder passwordEncoder, JwtService jwtUtil) {
         this.signUpRepository = signUpRepository;
@@ -19,31 +22,31 @@ public class SignUpService {
         this.jwtUtil = jwtUtil;
     }
 
-    public String initialSignUp(SignUpDTO signUpDTO){
-        if(signUpDTO.getEmail().isEmpty() || signUpDTO.getToken().isEmpty()) {
+    public String initialSignUp(InitialSignUpDTO initialSignUpDTO){
+        if(initialSignUpDTO.getEmail().isEmpty() || initialSignUpDTO.getToken().isEmpty()) {
             return "Invalid credentials";
         }
-        Optional<SignUp> existingStudent=signUpRepository.findByEmailAndToken(signUpDTO.getEmail(), signUpDTO.getToken());
+        Optional<SignUp> existingStudent=signUpRepository.findByEmailAndToken(initialSignUpDTO.getEmail(), initialSignUpDTO.getToken());
         if(existingStudent.isPresent()){
             SignUp student=existingStudent.get();
-            student.setToken(signUpDTO.getToken());
-            student.setEmail(signUpDTO.getEmail());
+            student.setToken(initialSignUpDTO.getToken());
+            student.setEmail(initialSignUpDTO.getEmail());
             signUpRepository.save(student);
             return "Authorization successful";
         }
         return "Invalid credentials";
     }
 
-    public String setPassword(SignUpDTO signUpDTO){
-        if(signUpDTO.getPassword().isEmpty()|| signUpDTO.getEmail().isEmpty()){
+    public String setPassword(CreatePasswordDTO createPasswordDTO){
+        if(createPasswordDTO.getPassword().isEmpty()|| createPasswordDTO.getEmail().isEmpty()){
             return "Invalid credentials";
         }
-        Optional<SignUp> existingStudent=signUpRepository.findByEmail(signUpDTO.getEmail());
+        Optional<SignUp> existingStudent=signUpRepository.findByEmail(createPasswordDTO.getEmail());
         if(existingStudent.isEmpty()){
             return "Invalid credentials";
         }
         SignUp student=existingStudent.get();
-        student.setPassword(passwordEncoder.encode(signUpDTO.getPassword()));
+        student.setPassword(passwordEncoder.encode(createPasswordDTO.getPassword()));
         student.setToken(null);
         signUpRepository.save(student);
         return "Password set successfully";
@@ -96,16 +99,15 @@ public class SignUpService {
     } else {
         throw new IllegalArgumentException("Invalid credentials");
     }
-
 }
 
-    public String resetPassword(String email, String newPassword){
-        Optional<SignUp> user= signUpRepository.findByEmail(email);
+    public String resetPassword(ResetPasswordDTO resetPasswordDTO){
+        Optional<SignUp> user= signUpRepository.findByEmail(resetPasswordDTO.getEmail());
         if(user.isEmpty()){
             return "User not found";
         }
         SignUp student=user.get();
-        student.setPassword(passwordEncoder.encode(newPassword));
+        student.setPassword(passwordEncoder.encode(resetPasswordDTO.getNewPassword()));
         signUpRepository.save(student);
         return "Password reset successfully";
     }
