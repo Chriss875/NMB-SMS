@@ -3,6 +3,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.Optional;
 import com.nmbsms.security.JwtService;
+import jakarta.persistence.EntityNotFoundException;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 
 @Service
@@ -22,9 +26,9 @@ public class SignUpService {
         this.jwtUtil = jwtUtil;
     }
 
-    public String initialSignUp(InitialSignUpDTO initialSignUpDTO){
-        if(initialSignUpDTO.getEmail().isEmpty() || initialSignUpDTO.getToken().isEmpty()) {
-            return "Invalid credentials";
+    public ResponseEntity<String> initialSignUp(InitialSignUpDTO initialSignUpDTO){
+        if(initialSignUpDTO.getEmail()==null || initialSignUpDTO.getToken()==null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Invalid credentials");
         }
         Optional<SignUp> existingStudent=signUpRepository.findByEmailAndToken(initialSignUpDTO.getEmail(), initialSignUpDTO.getToken());
         if(existingStudent.isPresent()){
@@ -32,27 +36,27 @@ public class SignUpService {
             student.setToken(initialSignUpDTO.getToken());
             student.setEmail(initialSignUpDTO.getEmail());
             signUpRepository.save(student);
-            return "Authorization successful";
+            return ResponseEntity.ok("Authorization successful");
         }
-        return "Invalid credentials";
+        throw new EntityNotFoundException("User not found");
     }
 
-    public String setPassword(CreatePasswordDTO createPasswordDTO){
-        if(createPasswordDTO.getPassword().isEmpty()|| createPasswordDTO.getEmail().isEmpty()){
-            return "Invalid credentials";
+    public ResponseEntity<String> setPassword(CreatePasswordDTO createPasswordDTO){
+        if(createPasswordDTO.getPassword()==null|| createPasswordDTO.getEmail()==null){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Invalid credentials");
         }
         Optional<SignUp> existingStudent=signUpRepository.findByEmail(createPasswordDTO.getEmail());
         if(existingStudent.isEmpty()){
-            return "Invalid credentials";
+            throw new EntityNotFoundException("User not found");
         }
         SignUp student=existingStudent.get();
         student.setPassword(passwordEncoder.encode(createPasswordDTO.getPassword()));
         student.setToken(null);
         signUpRepository.save(student);
-        return "Password set successfully";
+        return ResponseEntity.ok("Password set successfully");
     }
     
-    public String completeSignUp(SignUpDTO signUpDTO){
+    public ResponseEntity<String> completeSignUp(SignUpDTO signUpDTO){
         Optional<SignUp> existingUser = signUpRepository.findByEmail(signUpDTO.getEmail());
 
         if(existingUser.isPresent()){
@@ -69,17 +73,17 @@ public class SignUpService {
             student.setProfileCompleted(true);
             student.setRole(UserRoles.STUDENT);
             signUpRepository.save(student);
-            return "Profile created successfully";
+            return ResponseEntity.ok("Profile created successfully");
         } else {
-            throw new IllegalArgumentException("User not found");
+            throw new EntityNotFoundException("User not found");
         }
     }
 
     LoginDTO loginDTO= new LoginDTO();
 
-    public LoginResponseDTO login(LoginDTO loginDTO){
+    public ResponseEntity<LoginResponseDTO> login(LoginDTO loginDTO){
     if (loginDTO == null || loginDTO.getEmail() == null || loginDTO.getPassword() == null) {
-        throw new IllegalArgumentException("Invalid credentials");
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Credentials can not be empty");
     }
 
     String email = loginDTO.getEmail().trim();
@@ -87,7 +91,7 @@ public class SignUpService {
     Optional<SignUp> userOptional = signUpRepository.findByEmail(email);
 
     if (userOptional.isEmpty()) {
-        throw new IllegalArgumentException("Invalid credentials");
+        throw new EntityNotFoundException("User not found");
     }
 
     SignUp user = userOptional.get();
@@ -95,20 +99,20 @@ public class SignUpService {
 
     if (passwordMatches) {
         String token = jwtUtil.generateToken(email);
-        return new LoginResponseDTO(token, user);
+        return ResponseEntity.ok(new LoginResponseDTO(token, user));
     } else {
-        throw new IllegalArgumentException("Invalid credentials");
+        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"Invalid credentials");
     }
 }
 
-    public String resetPassword(ResetPasswordDTO resetPasswordDTO){
+    public ResponseEntity<String> resetPassword(ResetPasswordDTO resetPasswordDTO){
         Optional<SignUp> user= signUpRepository.findByEmail(resetPasswordDTO.getEmail());
         if(user.isEmpty()){
-            return "User not found";
+            throw new EntityNotFoundException("User not found");
         }
         SignUp student=user.get();
         student.setPassword(passwordEncoder.encode(resetPasswordDTO.getNewPassword()));
         signUpRepository.save(student);
-        return "Password reset successfully";
+        return ResponseEntity.ok("Password reset successfully");
     }
-    }
+}

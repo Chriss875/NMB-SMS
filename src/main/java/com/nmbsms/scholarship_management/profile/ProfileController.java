@@ -9,7 +9,7 @@ import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
 
 @RestController
-@RequestMapping("/api/profile")
+@RequestMapping(path="/api/profile")
 public class ProfileController {
     private final ProfileService profileService;
     private final JwtService jwtService;

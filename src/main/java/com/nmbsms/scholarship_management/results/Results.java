@@ -5,9 +5,11 @@ import lombok.*;
 
 
 
+
 @Entity
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "results")
@@ -18,7 +20,8 @@ public class Results {
     private LocalDateTime uploadTime;
     private String fileName;
     private String fileType;
-    private long fileSize;
-    private String filePath;
+
+    @Lob
+    private byte[] file;
     
 }
