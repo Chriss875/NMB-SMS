@@ -6,9 +6,9 @@ import io.jsonwebtoken.security.Keys;
 import com.nmbsms.configuration.Jwtproperties;
 import java.util.Date;
 import javax.crypto.SecretKey;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-@Component
+@Service
 public class JwtService {
     private final Jwtproperties jwtProperties;
     private final SecretKey secretKey;

@@ -99,7 +99,15 @@ public class SignUpService {
 
     if (passwordMatches) {
         String token = jwtUtil.generateToken(email);
-        return ResponseEntity.ok(new LoginResponseDTO(token, user));
+        LoginResponseDTO loginResponseDTO = new LoginResponseDTO();
+        loginResponseDTO.setId(user.getId());
+        loginResponseDTO.setEmail(email);
+        loginResponseDTO.setToken(token);
+        loginResponseDTO.setSex(user.getSex());
+        loginResponseDTO.setProfileCompleted(user.isProfileCompleted());
+        loginResponseDTO.setRole(user.getRole());
+        return ResponseEntity.ok(loginResponseDTO);
+
     } else {
         throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"Invalid credentials");
     }

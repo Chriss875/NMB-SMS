@@ -1,8 +1,9 @@
 package com.nmbsms.scholarship_management.profile;
+
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import com.nmbsms.scholarship_management.signUp.SignUp;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -11,31 +12,31 @@ import java.nio.file.Paths;
 
 
 @Service
+@RequiredArgsConstructor
 public class ProfileService {
-    @Autowired
-    private ProfileRepository profileRepository;
+    private final ProfileRepository profileRepository;
+    private final String uploadDir;
 
-    @Autowired
-    private String uploadDir;
-
-    public ProfileDTO getProfile(String email){
+    public ProfileResponse getProfile(String email){
         SignUp student= profileRepository.findByEmail(email).orElseThrow(()->new RuntimeException("User not found"));
 
-        ProfileDTO profileDTO= new ProfileDTO();
-        profileDTO.setEmail(student.getEmail());
-        profileDTO.setName(student.getName());
-        profileDTO.setSex(student.getSex());
-        profileDTO.setPhoneNumber(student.getPhoneNumber());
-        profileDTO.setUniversityName(student.getUniversityName());
-        profileDTO.setUniversityRegistrationId(student.getUniversityRegistrationId());
-        profileDTO.setCourseProgrammeName(student.getCourseProgrammeName());
-        profileDTO.setEnrolledYear(student.getEnrolledYear());
-        profileDTO.setBatchNo(student.getBatchNo());
-        profileDTO.setEnrollmentStatus(student.getEnrollmentStatus());
-        return profileDTO;
+        ProfileResponse profileResponse= new ProfileResponse();
+        profileResponse.setId(student.getId());
+        profileResponse.setRole(student.getRole());
+        profileResponse.setEmail(student.getEmail());
+        profileResponse.setName(student.getName());
+        profileResponse.setSex(student.getSex());
+        profileResponse.setPhoneNumber(student.getPhoneNumber());
+        profileResponse.setUniversityName(student.getUniversityName());
+        profileResponse.setUniversityRegistrationId(student.getUniversityRegistrationId());
+        profileResponse.setCourseProgrammeName(student.getCourseProgrammeName());
+        profileResponse.setEnrolledYear(student.getEnrolledYear());
+        profileResponse.setBatchNo(student.getBatchNo());
+        profileResponse.setEnrollmentStatus(student.getEnrollmentStatus());
+        return profileResponse;
     }
 
-    public String updateProfile(ProfileDTO profileDTO, String email,MultipartFile avatarFile) throws IOException {
+    public String updateProfile(ProfileResponse profileDTO, String email,MultipartFile avatarFile) throws IOException {
         SignUp student=profileRepository.findByEmail(email).orElseThrow(()->new RuntimeException("User not found"));
 
         if(profileDTO.getName()!= null){

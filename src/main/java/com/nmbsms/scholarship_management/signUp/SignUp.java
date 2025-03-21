@@ -17,40 +17,21 @@ public class SignUp {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     @Column(unique=true,nullable=false)
     private String email;
-
     @Column(nullable=true)
     private String password;
-
     private String token;
-
     private String name;
-
     private String sex;
-
     private String phoneNumber;
-
     private String universityName;
-
     private String universityRegistrationId;
-
     private String courseProgrammeName;
-
     private String enrolledYear;
-
-    @Column(nullable=true)
     private Integer batchNo;
-
-    @Column(nullable=true)
     private String avatar;
-
-    @Column(nullable=true)
     private String enrollmentStatus;
-
     private boolean profileCompleted;
-
     private UserRoles role;
-    
 }

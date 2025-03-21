@@ -20,17 +20,17 @@ public class ProfileController {
     }
 
     @GetMapping
-    public ResponseEntity<ProfileDTO> getProfile(){
+    public ResponseEntity<ProfileResponse> getProfile(){
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     String email = authentication.getName();
-    ProfileDTO profile = profileService.getProfile(email);
+    ProfileResponse profile = profileService.getProfile(email);
     return ResponseEntity.ok(profile);
     }
 
     @PutMapping("/info")
     public ResponseEntity<String> updateProfileInfo(
         @RequestHeader(value="Authorization",required=false) String authHeader,
-        @RequestPart("profile")@Valid ProfileDTO profileDTO){
+        @RequestPart("profile")@Valid ProfileResponse profileDTO){
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     if (authentication == null || !authentication.isAuthenticated()) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -55,7 +55,7 @@ public class ProfileController {
     try {
         String token = authHeader.substring(7);
         String email = jwtService.extractEmail(token);
-        ProfileDTO emptyDTO = new ProfileDTO();
+        ProfileResponse emptyDTO = new ProfileResponse();
         emptyDTO.setEmail(email);
         String result = profileService.updateProfile(emptyDTO, email, avatarFile);
         return ResponseEntity.ok(result);

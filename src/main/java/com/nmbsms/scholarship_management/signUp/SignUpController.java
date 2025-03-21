@@ -44,14 +44,12 @@ public class SignUpController {
 
     Map<String, Object> response = new HashMap<>();
     response.put("message", "Login successful");
-    response.put("user", responseBody.getUser());
-    response.put("token", responseBody.getToken());
+    response.put("loginResponseDTO", responseBody);
 
     return ResponseEntity.ok()
             .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
             .body(response);
 }
-
     
     @PostMapping("/reset-password")
     public ResponseEntity<String> resetPassword(@RequestBody ResetPasswordDTO resetPasswordDTO){
