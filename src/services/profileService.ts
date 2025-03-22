@@ -4,7 +4,7 @@ import { ProfileData } from '../types/profile.types';
 
 export async function getProfileData(): Promise<ProfileData> {
   try {
-    // Use the correct path that matches your backend controller
+    // Fix the path to match backend controller
     const response = await api.get('/profile');
     console.log('Profile data received:', response.data);
     
@@ -36,29 +36,28 @@ export async function updateProfileData(data: Partial<ProfileData>): Promise<Pro
     // Map frontend field names to backend field names
     const backendData = {
       name: data.name,
-      sex: data.sex,
       email: data.email,
-      phoneNumber: data.mobilePhone,
+      phoneNumber: data.mobilePhone, // Map `mobilePhone` to `phoneNumber`
       universityName: data.universityName,
-      universityRegistrationId: data.universityRegistrationID,
-      courseProgrammeName: data.programName,
+      universityRegistrationId: data.universityRegistrationID, // Map `universityRegistrationID` to `universityRegistrationId`
+      courseProgrammeName: data.programName, // Map `programName` to `courseProgrammeName`
       enrolledYear: data.enrolledYear,
+      batchNo: data.batchNumber, // Map `batchNumber` to `batchNo`
+      sex: data.sex,
       enrollmentStatus: data.enrollmentStatus,
-      batchNo: data.batchNumber,
-      avatar: data.profileImage
     };
 
-    // 
-    const response = await api.put('/profile/info', {
-      profile: backendData  
-    }, {
+    console.log('Updating profile with data:', backendData);
+
+    // Send the mapped data to the backend
+    const response = await api.put('/profile/info', backendData, {
       headers: {
-        'Content-Type': 'application/json'
-      }
+        'Content-Type': 'application/json',
+      },
     });
-    
-    // Map the response back to frontend format
-    return getProfileData(); // Re-fetch to ensure consistency
+
+    // Re-fetch to ensure consistency
+    return getProfileData();
   } catch (error) {
     console.error('Error updating profile data:', error);
     throw error;

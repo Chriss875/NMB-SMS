@@ -118,19 +118,24 @@ const authService = {
 
   completeProfile: async (profileData: ProfileData) => {
     try {
-      // Validate email presence
-      if (!profileData.email || profileData.email.trim() === '') {
-        console.error('Email validation failed:', {
-          emailValue: profileData.email,
-          profileData
-        });
-        throw new Error('Email is required but missing or empty');
-      }
-      
-      console.log('Completing profile for:', profileData.email);
-      
-      // This should match /signup/complete endpoint
-      const response = await api.post('/auth/signup/complete', profileData);
+      // Map frontend field names to backend field names
+      const backendData = {
+        name: profileData.name,
+        email: profileData.email,
+        phoneNumber: profileData.mobilePhone, // Map `mobilePhone` to `phoneNumber`
+        universityName: profileData.universityName,
+        universityRegistrationId: profileData.universityRegistrationID, // Map `universityRegistrationID` to `universityRegistrationId`
+        courseProgrammeName: profileData.programName, // Map `programName` to `courseProgrammeName`
+        enrolledYear: profileData.enrolledYear,
+        batchNo: profileData.batchNumber, // Map `batchNumber` to `batchNo`
+        sex: profileData.sex,
+        enrollmentStatus: profileData.enrollmentStatus,
+      };
+
+      console.log('Completing profile with data:', backendData);
+
+      // Send the mapped data to the backend
+      const response = await api.post('/auth/signup/complete', backendData);
       return response.data;
     } catch (error) {
       console.error('Profile completion error:', error);
