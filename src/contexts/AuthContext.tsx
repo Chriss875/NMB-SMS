@@ -42,7 +42,7 @@ export const AuthProvider: React.FC<{children: ReactNode}> = ({ children }) => {
   const [error, setError] = useState<string | null>(null);
   
   // Login function 
-  const login = async (email: string, password: string) => {
+const login = async (email: string, password: string) => {
     setIsLoading(true);
     setError(null);
     try {
@@ -50,15 +50,28 @@ export const AuthProvider: React.FC<{children: ReactNode}> = ({ children }) => {
       const response = await authService.login({ email, password });
       console.log('Login successful, response:', response);
       
-      // The response now includes the user object directly
-      if (response.user) {
+      // Check if response has loginResponseDTO
+      if (response.loginResponseDTO) {
+        // Create a user object from the loginResponseDTO
+        const userData = {
+          id: response.loginResponseDTO.id.toString(),
+          name: '', // Might need to update if name is available in your DTO
+          email: response.loginResponseDTO.email,
+          role: response.loginResponseDTO.role || 'user' // Default to 'user' if role is null
+        };
+        
         // Set user in state
-        setUser(response.user);
-        localStorage.setItem('user', JSON.stringify(response.user));
-        console.log('User data saved in state and localStorage:', response.user);
+        setUser(userData);
+        localStorage.setItem('user', JSON.stringify(userData));
+        console.log('User data saved in state and localStorage:', userData);
+        
+        // Store token if needed (you might already handle this in authService)
+        if (response.loginResponseDTO.token) {
+          localStorage.setItem('token', response.loginResponseDTO.token);
+        }
       } else {
-        // Fallback in case user object is missing
-        console.error('Login response missing user data:', response);
+        // Fallback in case loginResponseDTO is missing
+        console.error('Login response missing loginResponseDTO:', response);
         throw new Error('Invalid response format: missing user data');
       }
     } catch (err: any) {
