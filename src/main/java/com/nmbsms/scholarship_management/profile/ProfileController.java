@@ -8,6 +8,7 @@ import com.nmbsms.security.JwtService;
 import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
 
+
 @RestController
 @RequestMapping(path="/api/profile")
 public class ProfileController {
@@ -38,15 +39,14 @@ public class ProfileController {
     }
     String email = authentication.getName();
     profileDTO.setEmail(email);
-
     try {
         String result = profileService.updateProfile(profileDTO, email, null);
         return ResponseEntity.ok(result);
     } catch (Exception e) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to update profile info");
     }
-    
         }
+
 
     @PutMapping("/avatar")
     public ResponseEntity<String> updateAvatar(
