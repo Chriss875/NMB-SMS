@@ -14,6 +14,7 @@ import jakarta.servlet.http.Cookie;
 import org.springframework.lang.NonNull;
 import com.nmbsms.scholarship_management.logout.LogoutService;
 
+
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -53,4 +54,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
     filterChain.doFilter(request, response);
 }
+
+@Override
+    protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
+        String path = request.getRequestURI();
+        return path.startsWith("/api/auth/login") || path.startsWith("/api/logout");
+    }
 }
