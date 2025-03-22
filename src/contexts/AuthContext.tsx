@@ -191,29 +191,49 @@ const login = async (email: string, password: string) => {
   // Update the auth check useEffect to properly verify authentication on page load
   useEffect(() => {
     const checkAuth = async () => {
-      const storedUser = localStorage.getItem('user');
-      const token = localStorage.getItem('authToken');
-      
-      if (!storedUser || !token) {
-        setIsLoading(false);
-        return;
-      }
-      
       try {
         setIsLoading(true);
-        // Verify the token is still valid by getting current user
-        const currentUser = await authService.getCurrentUser();
+        const storedUser = localStorage.getItem('user');
+        const token = localStorage.getItem('authToken');
         
-        if (currentUser) {
-          // If we get a valid response, update the user state
-          setUser(JSON.parse(storedUser));
+        console.log('Checking auth on app mount:', { 
+          hasUser: !!storedUser, 
+          hasToken: !!token 
+        });
+        
+        if (!storedUser || !token) {
+          console.log('No stored user or token found');
+          setIsLoading(false);
+          return;
+        }
+        
+        try {
+          // Use a simpler approach to verify the token
+          const userData = JSON.parse(storedUser);
+          setUser(userData);
+          
+          // Optional: Make an API call to validate the token
+          // but don't block the UI on this
+          authService.getCurrentUser()
+            .then(() => {
+              console.log('Token validated via API');
+            })
+            .catch((err) => {
+              console.error('Token validation failed:', err);
+              // Only clear if it's an auth error
+              if (err?.response?.status === 401) {
+                setUser(null);
+                localStorage.removeItem('user');
+                localStorage.removeItem('authToken');
+              }
+            });
+        } catch (parseErr) {
+          console.error('Error parsing stored user:', parseErr);
+          localStorage.removeItem('user');
+          localStorage.removeItem('authToken');
         }
       } catch (err) {
-        // If there's an error, token is likely invalid
-        console.error('Error validating authentication:', err);
-        setUser(null);
-        localStorage.removeItem('user');
-        localStorage.removeItem('authToken');
+        console.error('Error in checkAuth:', err);
       } finally {
         setIsLoading(false);
       }

@@ -19,6 +19,25 @@ interface ImportMeta {
   });
 
 
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      // Set token in Authorization header
+      config.headers.Authorization = `Bearer ${token}`;
+      console.log('Added auth token to request:', 
+        config.url, 
+        'Token:', token.substring(0, 10) + '...');
+    } else {
+      console.warn('No auth token found for request to:', config.url);
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 // token interceptor to ensure it retrieves the token correctly
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('authToken');

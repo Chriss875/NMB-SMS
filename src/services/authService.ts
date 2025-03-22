@@ -140,8 +140,14 @@ const authService = {
 
   getCurrentUser: async () => {
     try {
-      const response = await api.get('/auth/me');
-      return response.data;
+      // Use the profile endpoint since /auth/me doesn't exist
+      const response = await api.get('/profile');
+      return {
+        id: response.data.id?.toString(),
+        email: response.data.email,
+        name: response.data.name,
+        role: response.data.role || 'user'
+      };
     } catch (error) {
       console.error('Get current user error:', error);
       throw error;

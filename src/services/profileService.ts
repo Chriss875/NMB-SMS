@@ -48,9 +48,9 @@ export async function updateProfileData(data: Partial<ProfileData>): Promise<Pro
       avatar: data.profileImage
     };
 
-    // Update to match the backend controller endpoint
+    // 
     const response = await api.put('/profile/info', {
-      profile: backendData  // Send mapped data
+      profile: backendData  
     }, {
       headers: {
         'Content-Type': 'application/json'
