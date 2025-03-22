@@ -37,3 +37,6 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### Ignore CORS configuration file ###
+src/main/java/com/nmbsms/configuration/CorsConfig.java
