@@ -12,14 +12,14 @@ interface ImportMeta {
   
   // Base API setup
   export const api: AxiosInstance = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8080/api',
+    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8080',
     headers: {
       'Content-Type': 'application/json',
     },
   });
 
 
-// Update the token interceptor to ensure it retrieves the token correctly
+// token interceptor to ensure it retrieves the token correctly
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('authToken');
   if (token) {

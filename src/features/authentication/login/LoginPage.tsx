@@ -36,7 +36,11 @@ const LoginPage: React.FC = () => {
     e.preventDefault();
     try {
       console.log('Login form submitted');
-      await login(email, password);
+      const response = await login(email, password);
+      
+      // Debug the response and token
+      console.log('Login response debug:', response);
+      console.log('Token stored in localStorage:', localStorage.getItem('authToken'));
       
       // Force a small delay to ensure state updates are processed
       setTimeout(() => {

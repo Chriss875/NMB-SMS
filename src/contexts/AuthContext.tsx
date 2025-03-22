@@ -45,47 +45,50 @@ export const AuthProvider: React.FC<{children: ReactNode}> = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true); // Start as true to prevent flash of unauthenticated state
   const [error, setError] = useState<string | null>(null);
   
-  // Login function 
+  // Update the login function to properly store the token
 const login = async (email: string, password: string) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      console.log('Attempting login in AuthContext');
-      const response = await authService.login({ email, password });
-      console.log('Login successful, response:', response);
+  setIsLoading(true);
+  setError(null);
+  try {
+    console.log('Attempting login in AuthContext');
+    const response = await authService.login({ email, password });
+    console.log('Login successful, response:', response);
+    
+    // Check if response has loginResponseDTO
+    if (response && response.loginResponseDTO) {
+      // Create a user object from the loginResponseDTO
+      const userData = {
+        id: response.loginResponseDTO.id.toString(),
+        name: response.loginResponseDTO.name || '', 
+        email: response.loginResponseDTO.email,
+        role: response.loginResponseDTO.role || 'user'
+      };
       
-      // Check if response has loginResponseDTO
-      if (response.loginResponseDTO) {
-        // Create a user object from the loginResponseDTO
-        const userData = {
-          id: response.loginResponseDTO.id.toString(),
-          name: response.loginResponseDTO.name || '', // Use name if available 
-          email: response.loginResponseDTO.email,
-          role: response.loginResponseDTO.role || 'user' // Default to 'user' if role is null
-        };
-        
-        // Set user in state
-        setUser(userData);
-        localStorage.setItem('user', JSON.stringify(userData));
-        
-        // Store token consistently as 'authToken'
-        if (response.loginResponseDTO.token) {
-          localStorage.setItem('authToken', response.loginResponseDTO.token);
-        }
+      // Set user in state
+      setUser(userData);
+      localStorage.setItem('user', JSON.stringify(userData));
+      
+      // Store token consistently as 'authToken' - IMPORTANT: Verify this exact format
+      if (response.loginResponseDTO.token) {
+        console.log('Storing auth token to localStorage:', response.loginResponseDTO.token.substring(0, 10) + '...');
+        localStorage.setItem('authToken', response.loginResponseDTO.token);
       } else {
-        // Fallback in case loginResponseDTO is missing
-        console.error('Login response missing loginResponseDTO:', response);
-        throw new Error('Invalid response format: missing user data');
+        console.error('No token received in login response!', response);
+        throw new Error('No authentication token received from server');
       }
-    } catch (err: any) {
-      console.error('Login error in AuthContext:', err);
-      const errorMessage = err.response?.data?.message || 'An error occurred during login';
-      setError(errorMessage);
-      throw err;
-    } finally {
-      setIsLoading(false);
+    } else {
+      console.error('Login response invalid format:', response);
+      throw new Error('Invalid response format from server');
     }
-  };
+  } catch (err: any) {
+    console.error('Login error in AuthContext:', err);
+    const errorMessage = err.response?.data?.message || 'An error occurred during login';
+    setError(errorMessage);
+    throw err;
+  } finally {
+    setIsLoading(false);
+  }
+};
   
   // Update the logout function to clear all auth data
   const logout = async () => {
