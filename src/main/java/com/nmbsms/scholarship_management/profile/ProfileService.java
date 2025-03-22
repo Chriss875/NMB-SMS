@@ -3,6 +3,7 @@ package com.nmbsms.scholarship_management.profile;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import com.nmbsms.scholarship_management.signUp.SignUp;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import java.io.File;
 import java.io.IOException;
@@ -18,8 +19,7 @@ public class ProfileService {
     private final String uploadDir;
 
     public ProfileResponse getProfile(String email){
-        SignUp student= profileRepository.findByEmail(email).orElseThrow(()->new RuntimeException("User not found"));
-
+        SignUp student= profileRepository.findByEmail(email).orElseThrow(()->new EntityNotFoundException("User not found"));
         ProfileResponse profileResponse= new ProfileResponse();
         profileResponse.setId(student.getId());
         profileResponse.setRole(student.getRole());
@@ -37,7 +37,7 @@ public class ProfileService {
     }
 
     public String updateProfile(ProfileResponse profileDTO, String email,MultipartFile avatarFile) throws IOException {
-        SignUp student=profileRepository.findByEmail(email).orElseThrow(()->new RuntimeException("User not found"));
+        SignUp student=profileRepository.findByEmail(email).orElseThrow(()->new EntityNotFoundException("User not found"));
 
         if(profileDTO.getName()!= null){
             student.setName(profileDTO.getName());
