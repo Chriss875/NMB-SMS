@@ -36,9 +36,13 @@ export const AuthContext = createContext<AuthContextType>({
 });
 
 export const AuthProvider: React.FC<{children: ReactNode}> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(() => {
+    // Initialize user from localStorage on component mount
+    const storedUser = localStorage.getItem('user');
+    return storedUser ? JSON.parse(storedUser) : null;
+  });
   const [signupData] = useState<SignupData | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // Start as true to prevent flash of unauthenticated state
   const [error, setError] = useState<string | null>(null);
   
   // Login function 
@@ -55,7 +59,7 @@ const login = async (email: string, password: string) => {
         // Create a user object from the loginResponseDTO
         const userData = {
           id: response.loginResponseDTO.id.toString(),
-          name: '', // Might need to update if name is available in your DTO
+          name: response.loginResponseDTO.name || '', // Use name if available 
           email: response.loginResponseDTO.email,
           role: response.loginResponseDTO.role || 'user' // Default to 'user' if role is null
         };
@@ -63,11 +67,10 @@ const login = async (email: string, password: string) => {
         // Set user in state
         setUser(userData);
         localStorage.setItem('user', JSON.stringify(userData));
-        console.log('User data saved in state and localStorage:', userData);
         
-        // Store token if needed (you might already handle this in authService)
+        // Store token consistently as 'authToken'
         if (response.loginResponseDTO.token) {
-          localStorage.setItem('token', response.loginResponseDTO.token);
+          localStorage.setItem('authToken', response.loginResponseDTO.token);
         }
       } else {
         // Fallback in case loginResponseDTO is missing
@@ -84,7 +87,7 @@ const login = async (email: string, password: string) => {
     }
   };
   
-  // Logout function 
+  // Update the logout function to clear all auth data
   const logout = async () => {
     setIsLoading(true);
     try {
@@ -92,9 +95,10 @@ const login = async (email: string, password: string) => {
     } catch (err) {
       console.error("Error during logout:", err);
     } finally {
-      // Clear local state
+      // Clear local state and storage
       setUser(null);
       localStorage.removeItem('user');
+      localStorage.removeItem('authToken'); // Clear token consistently
       setIsLoading(false);
     }
   };
@@ -181,26 +185,32 @@ const login = async (email: string, password: string) => {
     }
   };
   
-  // Check for existing user on mount and validate token
+  // Update the auth check useEffect to properly verify authentication on page load
   useEffect(() => {
     const checkAuth = async () => {
       const storedUser = localStorage.getItem('user');
+      const token = localStorage.getItem('authToken');
       
-      if (!storedUser) {
+      if (!storedUser || !token) {
+        setIsLoading(false);
         return;
       }
       
       try {
         setIsLoading(true);
         // Verify the token is still valid by getting current user
-        // Cookie will be sent automatically
-        const response = await authService.getCurrentUser();
-        setUser(response.user);
-        localStorage.setItem('user', JSON.stringify(response.user));
+        const currentUser = await authService.getCurrentUser();
+        
+        if (currentUser) {
+          // If we get a valid response, update the user state
+          setUser(JSON.parse(storedUser));
+        }
       } catch (err) {
         // If there's an error, token is likely invalid
+        console.error('Error validating authentication:', err);
         setUser(null);
         localStorage.removeItem('user');
+        localStorage.removeItem('authToken');
       } finally {
         setIsLoading(false);
       }

@@ -19,7 +19,7 @@ interface ImportMeta {
   });
 
 
-// Add token to all requests if available
+// Update the token interceptor to ensure it retrieves the token correctly
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('authToken');
   if (token) {
