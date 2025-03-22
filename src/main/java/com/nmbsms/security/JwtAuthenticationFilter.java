@@ -12,11 +12,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import jakarta.servlet.http.Cookie;
 import org.springframework.lang.NonNull;
+import com.nmbsms.scholarship_management.logout.LogoutService;
 
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
+    private final LogoutService logoutService;
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain)
@@ -31,6 +33,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 break;
             }
         }
+    }
+
+    if (logoutService.isTokenBlacklisted(token)) {
+        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token is blacklisted");
+        return;
     }
     if (token == null) {
         String authHeader = request.getHeader("Authorization");

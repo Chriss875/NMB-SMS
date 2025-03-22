@@ -10,17 +10,14 @@ import jakarta.transaction.Transactional;
 import com.nmbsms.scholarship_management.signUp.SignUp;
 import java.util.Optional;
 import java.util.regex.Pattern;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class PaymentService {
     private final SignUpRepository signUpRepository;
-    private final PaymentRepository paymentRepository;
     private static final Pattern CONTROL_NUMBER_PATTERN = Pattern.compile("^\\d{12}$");
 
-    public PaymentService(SignUpRepository signUpRepository, PaymentRepository paymentRepository) {
-        this.paymentRepository = paymentRepository;
-        this.signUpRepository = signUpRepository;
-    }
 
     PaymentDTO paymentDTO = new PaymentDTO();
 
@@ -39,21 +36,13 @@ public class PaymentService {
         Optional<SignUp> userOptional = signUpRepository.findByEmail(email);
         if (!userOptional.isPresent()) {
             throw new EntityNotFoundException("User not Found");
-                    
         }
-        SignUp user = userOptional.get();
 
-        Optional<Payment> existingControlNumber = paymentRepository.findByEmail(email);
-        if (existingControlNumber.isPresent()) {
-            Payment payment = existingControlNumber.get();
-            payment.setFeeControlNumber(paymentDTO.getFeeControlNumber());
-            paymentRepository.save(payment);
-        } else {
-            Payment newPayment = new Payment();
-            newPayment.setEmail(email);
-            newPayment.setName(user.getName());
-            newPayment.setFeeControlNumber(paymentDTO.getFeeControlNumber());
-            paymentRepository.save(newPayment);
+        Optional<SignUp> controlNumber = signUpRepository.findByEmail(email);
+        if (controlNumber.isPresent()) {
+            SignUp signUp = controlNumber.get();
+            signUp.setFeeControlNumber(paymentDTO.getFeeControlNumber());
+            signUpRepository.save(signUp);
         }
         return ResponseEntity.ok("University fee control number submitted successfully");
     }
@@ -73,20 +62,12 @@ public class PaymentService {
         if (!userOptional.isPresent()) {
             throw new EntityNotFoundException("User not found");
         }
-        SignUp user = userOptional.get();
 
-        Optional<Payment> existingControlNumber = paymentRepository.findByEmail(email);
-        if (existingControlNumber.isPresent()) {
-            Payment payment = existingControlNumber.get();
-            payment.setNhifControlNumber(paymentDTO.getNhifControlNumber());
-            paymentRepository.save(payment);
-        } else {
-            Payment newPayment = new Payment();
-            newPayment.setEmail(email);
-            newPayment.setName(user.getName());
-            newPayment.setNhifControlNumber(paymentDTO.getNhifControlNumber());
-            paymentRepository.save(newPayment);
-            paymentRepository.save(newPayment);
+        Optional<SignUp> controlNumber = signUpRepository.findByEmail(email);
+        if (controlNumber.isPresent()) {
+            SignUp signUp = controlNumber.get();
+            signUp.setNhifControlNumber(paymentDTO.getNhifControlNumber());
+            signUpRepository.save(signUp);
         }
         return ResponseEntity.ok("Nhif control number submitted successfully");
     }

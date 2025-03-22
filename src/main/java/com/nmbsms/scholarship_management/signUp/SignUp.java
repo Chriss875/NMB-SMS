@@ -34,4 +34,6 @@ public class SignUp {
     private String enrollmentStatus;
     private boolean profileCompleted;
     private UserRoles role;
+    private String feeControlNumber;
+    private String nhifControlNumber;
 }
