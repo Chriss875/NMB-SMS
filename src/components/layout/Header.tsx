@@ -32,7 +32,7 @@ const Header: React.FC<HeaderProps> = ({ sidebarOpen, setSidebarOpen }) => {
           <Menu className="h-6 w-6" />
         </button>
         <div className="flex items-center space-x-2">
-          <img src="/assets/images/nmb-logo.png" alt="NMB Logo" className="h-[75px] w-auto" />
+          <img src="/assets/images/nmb-logo2.png" alt="NMB Logo" className="h-[75px] w-auto" />
           <h1 className="text-xl font-semibold">Nuru Yangu Scholarship</h1>
         </div>
       </div>
