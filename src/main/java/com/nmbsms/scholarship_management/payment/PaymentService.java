@@ -4,6 +4,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import com.nmbsms.scholarship_management.signUp.SignUpRepository;
+
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import com.nmbsms.scholarship_management.signUp.SignUp;
 import java.util.Optional;
@@ -28,8 +30,7 @@ public class PaymentService {
         
         
         if (feeControlNumber == null || feeControlNumber.trim().isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Fee control number cannot be empty.");
+            throw new NullPointerException("Fee control number cannot be empty");
         }
         if (!CONTROL_NUMBER_PATTERN.matcher(feeControlNumber).matches()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -37,8 +38,8 @@ public class PaymentService {
         }
         Optional<SignUp> userOptional = signUpRepository.findByEmail(email);
         if (!userOptional.isPresent()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("User not found.");
+            throw new EntityNotFoundException("User not Found");
+                    
         }
         SignUp user = userOptional.get();
 
@@ -62,8 +63,7 @@ public class PaymentService {
         String nhifControlNumber = paymentDTO.getNhifControlNumber();
 
         if (nhifControlNumber == null || nhifControlNumber.trim().isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Nhif control number cannot be empty.");
+            throw new NullPointerException("Nhif control number cannot be empty");
         }
         if (!CONTROL_NUMBER_PATTERN.matcher(nhifControlNumber).matches()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -71,8 +71,7 @@ public class PaymentService {
         }
         Optional<SignUp> userOptional = signUpRepository.findByEmail(email);
         if (!userOptional.isPresent()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("User not found.");
+            throw new EntityNotFoundException("User not found");
         }
         SignUp user = userOptional.get();
 
