@@ -7,7 +7,6 @@ import { AlertCircle } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
 import ProfileCard from '@/features/profile/ProfileCard';
 import EditProfileForm from '@/features/profile/EditProfileForm';
-import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 
 const ProfilePage: React.FC = () => {
@@ -56,15 +55,10 @@ const ProfilePage: React.FC = () => {
     
     return (
       <>
-        <div className="flex justify-end mb-4">
-          <Button 
-            variant="outline" 
-            onClick={() => setIsEditing(true)}
-          >
-            Edit Profile
-          </Button>
-        </div>
-        <ProfileCard profileData={profile} />
+        <ProfileCard 
+          profileData={profile} 
+          onEdit={() => setIsEditing(true)}
+        />
       </>
     );
   };
