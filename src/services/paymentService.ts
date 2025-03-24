@@ -1,5 +1,5 @@
 import { api } from './api';
-import { Payment, PaymentType } from '../features/payment/PaymentsPage';
+import { Payment } from '../features/payment/PaymentsPage';
 
 // Interface for payment request
 export interface PaymentDTO {

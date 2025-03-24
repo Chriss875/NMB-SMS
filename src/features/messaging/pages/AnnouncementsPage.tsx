@@ -2,7 +2,6 @@ import React from 'react';
 import { useMessaging } from '../context/MessagingContext';
 import AnnouncementList from '../components/announcements/AnnouncementList';
 
-
 const AnnouncementsPage: React.FC = () => {
   const { announcements, markAnnouncementAsRead } = useMessaging();
 

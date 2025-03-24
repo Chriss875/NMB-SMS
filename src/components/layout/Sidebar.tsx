@@ -1,13 +1,14 @@
 // src/components/layout/Sidebar.tsx
 import React, { useState } from 'react';
-import { useLocation, Link } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { ROUTES } from '../../constants/routes';
 import NavigationItem from './NavigationItem';
 import { useAuth } from '@/hooks/useAuth';
 import { 
   Home, User, FileText, CreditCard, 
-  MessageSquare, Users, Settings, LogOut,
-  Menu, AlertCircle, Bell, MessageCircle
+  Users, Settings, LogOut, AlertCircle,
+  Bell,
+  Menu, 
 } from 'lucide-react';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,38 +23,23 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
   const currentPath = location.pathname;
   const { logout } = useAuth();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-  const [expandedMenus, setExpandedMenus] = useState<string[]>([]);
+  const [] = useState<string[]>([]);
   
-  // Check if path matches to set active state
+ 
   const isActive = (path: string) => currentPath === path;
   
-  // Check if path is under a parent route
-  const isUnderParent = (parentPath: string) => currentPath.startsWith(parentPath);
   
-  // Toggle submenu expansion
-  const toggleSubmenu = (menuKey: string) => {
-    setExpandedMenus(current => 
-      current.includes(menuKey) 
-        ? current.filter(item => item !== menuKey)
-        : [...current, menuKey]
-    );
-  };
-  
-  // Check if menu is expanded
-  const isMenuExpanded = (menuKey: string) => expandedMenus.includes(menuKey);
-  
-  // Close sidebar when clicking outside on mobile
   const promptLogout = () => {
     setShowLogoutConfirm(true);
   };
   
-  // Handle actual logout after confirmation
+
   const handleLogout = async () => {
     await logout();
     setShowLogoutConfirm(false);
   };
   
-  // Cancel logout
+
   const cancelLogout = () => {
     setShowLogoutConfirm(false);
   };
@@ -104,60 +90,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
               active={isActive(ROUTES.PAYMENTS)}
             />
 
-            {/* Messaging with nested items */}
-            <li>
-              <button 
-                className={`w-full flex items-center justify-between p-3 rounded-lg ${
-                  isUnderParent(ROUTES.MESSAGING) 
-                    ? 'bg-blue-100 text-blue-700' 
-                    : 'text-gray-600 hover:bg-gray-100'
-                }`}
-                onClick={() => toggleSubmenu('messaging')}
-              >
-                <div className={`flex items-center ${!isOpen && 'justify-center w-full'}`}>
-                  <MessageSquare className="h-5 w-5" />
-                  {isOpen && <span className="ml-3">Messaging</span>}
-                </div>
-                {isOpen && (
-                  <svg 
-                    className={`w-4 h-4 transform ${isMenuExpanded('messaging') ? 'rotate-90' : ''}`} 
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                )}
-              </button>
-              
-              {/* Submenu items */}
-              {(isOpen || isMenuExpanded('messaging')) && (
-                <ul className={`mt-0.5 pl-5 space-y-0.5 ${isMenuExpanded('messaging') || isUnderParent(ROUTES.MESSAGING) ? 'block' : 'hidden'}`}>
-                  <li>
-                    <Link 
-                      to={ROUTES.ANNOUNCEMENTS}
-                      className={`flex items-center py-2 px-2.5 rounded-md text-sm ${
-                        isActive(ROUTES.ANNOUNCEMENTS) ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50'
-                      }`}
-                    >
-                      <Bell className="h-4 w-4 min-w-[16px]" />
-                      {isOpen && <span className="ml-2.5 truncate">Announcements</span>}
-                    </Link>
-                  </li>
-                  <li>
-                    <Link 
-                      to={ROUTES.CHATS}
-                      className={`flex items-center py-2 px-2.5 rounded-md text-sm ${
-                        isActive(ROUTES.CHATS) ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50'
-                      }`}
-                    >
-                      <MessageCircle className="h-4 w-4 min-w-[16px]" />
-                      {isOpen && <span className="ml-2.5 truncate">Chats</span>}
-                    </Link>
-                  </li>
-                </ul>
-              )}
-            </li>
+            {/* Simplified Announcements Navigation */}
+            <NavigationItem 
+              icon={<Bell className="h-5 w-5" />}
+              label={isOpen ? "Announcements" : ""}
+              to={ROUTES.ANNOUNCEMENTS}
+              active={isActive(ROUTES.ANNOUNCEMENTS)}
+            />
 
             <NavigationItem 
               icon={<Users className="h-5 w-5" />} 

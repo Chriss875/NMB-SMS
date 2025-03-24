@@ -50,11 +50,6 @@ export async function updateProfileData(data: Partial<ProfileData>): Promise<Pro
     console.log('Updating profile with data:', backendData);
 
     // Send the mapped data to the backend
-    const response = await api.put('/profile/info', backendData, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
 
     // Re-fetch to ensure consistency
     return getProfileData();
