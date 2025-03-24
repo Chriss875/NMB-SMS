@@ -1,7 +1,6 @@
 // src/App.tsx
 import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { ROUTES } from './constants/routes';
 import { Loader2 } from 'lucide-react';
 import { AuthProvider } from './contexts/AuthContext';
 import { useAuth } from './hooks/useAuth';
@@ -10,6 +9,7 @@ import { ResultProvider } from './contexts/ResultContext';
 import ProtectedRoute from './constants/ProtectedRoute';
 import SetPasswordPage from './features/authentication/SetPasswordPage';
 import EmailVerifiedGuard from './features/authentication/EmailVerifiedGuard';
+import SettingsPage from '@/features/settings/pages/SettingsPage';
 
 // Pages
 import LoginPage from './features/authentication/login/LoginPage';
@@ -26,6 +26,30 @@ import MessagingLayout from './features/messaging/pages/MessagingLayout';
 import AnnouncementsPage from './features/messaging/pages/AnnouncementsPage';
 import ChatsPage from './features/messaging/pages/ChatsPage';
 import CompleteProfileGuard from './features/authentication/CompleteProfileGuard';
+
+// Routes
+export const ROUTES = {
+  HOME: '/',
+  LOGIN: '/login',
+  SIGNUP: '/signup',
+  REGISTER: '/register',
+  PROFILE: '/profile',
+  SETTINGS: '/settings',
+  RESULTS: '/results',
+  PAYMENTS: '/payments',
+  MENTORSHIP: '/mentorship',
+  ANNOUNCEMENTS: '/announcements',
+  SETTINGS_PROFILE: '/settings/profile',
+  SETTINGS_NOTIFICATIONS: '/settings/notifications',
+  SETTINGS_SECURITY: '/settings/security',
+  SET_PASSWORD: '/set-password',
+  VERIFY_EMAIL: '/verify-email',
+  COMPLETE_PROFILE: '/complete-profile',
+  // Add messaging routes
+  MESSAGING: '/messaging',
+  MESSAGING_ANNOUNCEMENTS: '/messaging/announcements',
+  MESSAGING_CHATS: '/messaging/chats'
+} as const;
 
 // Basic loading component
 const LoadingFallback = () => (
@@ -82,6 +106,7 @@ const App: React.FC = () => {
                   <Route path={ROUTES.RESULTS} element={<ResultsPage />} />
                   <Route path={ROUTES.PAYMENTS} element={<PaymentsPage />} />
                   <Route path={ROUTES.MENTORSHIP} element={<MentorshipPage />} />
+                  <Route path={ROUTES.SETTINGS} element={<SettingsPage />} />
                   
                   {/* Messaging routes */}
                   <Route path={ROUTES.MESSAGING} element={<MessagingLayout />}>

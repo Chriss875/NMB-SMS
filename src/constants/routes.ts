@@ -8,6 +8,7 @@ export const ROUTES = {
   RESULTS: '/results',
   PAYMENTS: '/payments',
   MENTORSHIP: '/mentorship',
-  ANNOUNCEMENTS: '/announcements', // Simplified route
-  // ... other routes
+  ANNOUNCEMENTS: '/announcements',
+  SETTINGS_NOTIFICATIONS: '/settings/notifications',
+  SETTINGS_SECURITY: '/settings/security',
 };
