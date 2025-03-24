@@ -32,52 +32,38 @@ export async function getProfileData(): Promise<ProfileData> {
 
 export async function updateProfileData(data: Partial<ProfileData>): Promise<ProfileData> {
   try {
-    // Map frontend field names to backend field names
+    // Map frontend field names to backend field names and ensure all required fields
     const backendData = {
       name: data.name,
       email: data.email,
-      phoneNumber: data.mobilePhone, // Map `mobilePhone` to `phoneNumber`
+      phoneNumber: data.mobilePhone,
       universityName: data.universityName,
-      universityRegistrationId: data.universityRegistrationID, // Map `universityRegistrationID` to `universityRegistrationId`
-      courseProgrammeName: data.programName, // Map `programName` to `courseProgrammeName`
-      enrolledYear: data.enrolledYear,
-      batchNo: data.batchNumber, // Map `batchNumber` to `batchNo`
-      sex: data.sex,
-      enrollmentStatus: data.enrollmentStatus,
+      universityRegistrationId: data.universityRegistrationID,
+      courseProgrammeName: data.programName,
+      enrolledYear: data.enrolledYear || '',
+      batchNo: Number(data.batchNumber) || 0, // Convert to number and provide default
+      sex: data.sex || '',
+      enrollmentStatus: data.enrollmentStatus || 'Active'
     };
 
-    console.log('Updating profile with data:', backendData);
+    console.log('Sending profile update data:', backendData);
 
-
-    // Re-fetch to ensure consistency
-    return getProfileData();
-  } catch (error) {
+    const response = await api.put('/profile/info', backendData);
+    
+    if (response.status === 200) {
+      console.log('Profile updated successfully:', response.data);
+      // Re-fetch to ensure consistency
+      return await getProfileData();
+    } else {
+      throw new Error(response.data?.message || 'Failed to update profile');
+    }
+  } catch (error: any) {
     console.error('Error updating profile data:', error);
-    throw error;
-  }
-}
-
-// Function for updating avatar specifically
-export async function updateProfileAvatar(file: File): Promise<string> {
-  try {
-    const formData = new FormData();
-    formData.append('avatar', file);
-    
-    const response = await api.put('/profile/avatar', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-    
-    return response.data;
-  } catch (error) {
-    console.error('Error updating profile avatar:', error);
-    throw error;
+    throw new Error(error.response?.data?.message || 'Failed to update profile');
   }
 }
 
 export const profileService = {
   getProfileData,
   updateProfileData,
-  updateProfileAvatar
 };

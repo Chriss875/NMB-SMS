@@ -28,6 +28,10 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({
       universityName: profileData.universityName,
       universityRegistrationID: profileData.universityRegistrationID,
       programName: profileData.programName,
+      enrolledYear: profileData.enrolledYear,
+      batchNumber: profileData.batchNumber,
+      sex: profileData.sex,
+      enrollmentStatus: profileData.enrollmentStatus
     }
   });
 
@@ -35,7 +39,12 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({
     try {
       setIsSubmitting(true);
       setError(null);
-      await onSave(data);
+      // Ensure batchNumber is a number
+      const formattedData = {
+        ...data,
+        batchNumber: Number(data.batchNumber)
+      };
+      await onSave(formattedData);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred while saving profile');
     } finally {
