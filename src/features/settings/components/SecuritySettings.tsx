@@ -26,11 +26,6 @@ const SecuritySettings = () => {
           </div>
           <Button>Update Password</Button>
         </div>
-
-        <div className="space-y-4">
-          <h3 className="font-medium">Two-Factor Authentication</h3>
-          <Button variant="outline">Enable 2FA</Button>
-        </div>
       </CardContent>
     </Card>
   );
