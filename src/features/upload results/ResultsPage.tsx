@@ -1,40 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import MainLayout from '../../components/layout/MainLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Upload, File, CheckCircle, AlertCircle, X, Download } from 'lucide-react';
-import { UploadedResult } from '@/services/resultService';
+import { useResults } from '@/contexts/ResultContext';
+
 
 const ResultsPage: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [localError, setLocalError] = useState<string | null>(null);
   const [isUploaded, setIsUploaded] = useState(false);
-  const [uploadedResults, setUploadedResults] = useState<UploadedResult[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   
-  // Fetch results on component mount
-  useEffect(() => {
-    fetchResults();
-  }, []);
+  // Use the result context
+  const { results, isLoading, error: contextError, uploadResult, deleteResult, downloadResult } = useResults();
   
-  const fetchResults = async () => {
-    try {
-      setIsLoading(true);
-      // When backend is ready, uncomment this
-      // const results = await resultService.getUserResults();
-      // setUploadedResults(results);
-      
-      // For now, use local state
-      setIsLoading(false);
-    } catch (err) {
-      setError('Failed to load uploaded results');
-      setIsLoading(false);
-    }
-  };
-
+  // Combine errors from context and local state
+  const error = localError || contextError;
+  
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragging(true);
@@ -46,18 +31,18 @@ const ResultsPage: React.FC = () => {
   };
 
   const validateFile = (file: File): boolean => {
-    setError(null);
+    setLocalError(null);
     
     // Check file type (PDF only)
     if (!file.type.includes('pdf')) {
-      setError('Please upload a PDF file');
+      setLocalError('Please upload a PDF file');
       return false;
     }
     
     // Check file size (max 5MB)
     const maxSizeMB = 5;
     if (file.size > maxSizeMB * 1024 * 1024) {
-      setError(`File size should be less than ${maxSizeMB}MB`);
+      setLocalError(`File size should be less than ${maxSizeMB}MB`);
       return false;
     }
     
@@ -91,31 +76,14 @@ const ResultsPage: React.FC = () => {
     if (!file) return;
     
     setIsUploading(true);
-    setError(null);
+    setLocalError(null);
     
     try {
-      // Use the service to upload the file to backend
-      // When backend is ready, uncomment this code
-      // const uploadedResult = await resultService.uploadResult(file);
-      // setUploadedResults(prev => [...prev, uploadedResult]);
-      
-      // For now, create mock result
-      const mockResult: UploadedResult = {
-        id: Date.now().toString(),
-        fileName: file.name,
-        fileSize: file.size,
-        fileType: file.type,
-        uploadDate: new Date().toISOString(),
-      };
-      
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Add the result to the list
-      setUploadedResults(prev => [...prev, mockResult]);
+      await uploadResult(file);
       setIsUploaded(true);
+      // Keep the file displayed but mark as uploaded
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred while uploading');
+      setLocalError(err instanceof Error ? err.message : 'An error occurred while uploading');
       setIsUploaded(false);
     } finally {
       setIsUploading(false);
@@ -127,35 +95,27 @@ const ResultsPage: React.FC = () => {
     setIsUploaded(false);
   };
 
-  const deleteUploadedFile = async (id: string) => {
+  const handleDeleteResult = async (id: string) => {
     try {
-      // When backend is ready, uncomment this
-      // await resultService.deleteResult(id);
-      
-      // Update state to remove the deleted result
-      setUploadedResults(prev => prev.filter(result => result.id !== id));
+      await deleteResult(id);
     } catch (err) {
-      setError('Failed to delete the file');
+      setLocalError('Failed to delete the file');
     }
   };
 
-  const downloadResult = async (_id: string, fileName: string) => {
+  const handleDownloadResult = async (id: string, fileName: string) => {
     try {
-      // When backend is ready, uncomment this
-      // const blob = await resultService.downloadResult(id);
-      // const url = window.URL.createObjectURL(blob);
-      // const a = document.createElement('a');
-      // a.href = url;
-      // a.download = fileName;
-      // document.body.appendChild(a);
-      // a.click();
-      // window.URL.revokeObjectURL(url);
-      // document.body.removeChild(a);
-      
-      // For now, just show an alert
-      alert(`Downloading ${fileName}... (This is a mock download)`);
+      const blob = await downloadResult(id);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
     } catch (err) {
-      setError('Failed to download the file');
+      setLocalError('Failed to download the file');
     }
   };
 
@@ -262,9 +222,9 @@ const ResultsPage: React.FC = () => {
               <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-2"></div>
               <p className="text-gray-500">Loading your documents...</p>
             </div>
-          ) : uploadedResults.length > 0 ? (
+          ) : results.length > 0 ? (
             <div className="space-y-2">
-              {uploadedResults.map((result) => (
+              {results.map((result) => (
                 <div key={result.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-md border">
                   <div className="flex items-center">
                     <File className="h-5 w-5 text-blue-500 mr-2" />
@@ -275,14 +235,14 @@ const ResultsPage: React.FC = () => {
                       {(result.fileSize / 1024 / 1024).toFixed(2)} MB
                     </span>
                     <button
-                      onClick={() => downloadResult(result.id, result.fileName)}
+                      onClick={() => handleDownloadResult(result.id, result.fileName)}
                       className="text-blue-500 hover:text-blue-700"
                       title="Download"
                     >
                       <Download className="h-4 w-4" />
                     </button>
                     <button
-                      onClick={() => deleteUploadedFile(result.id)}
+                      onClick={() => handleDeleteResult(result.id)}
                       className="text-red-500 hover:text-red-700"
                       title="Delete"
                     >
