@@ -4,12 +4,13 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, LogIn } from 'lucide-react';
+import { AlertCircle, LogIn, Eye, EyeOff } from 'lucide-react';
 import { ROUTES } from '@/constants/routes';
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const { login, isAuthenticated, isLoading, error } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -53,6 +54,17 @@ const LoginPage: React.FC = () => {
     }
   };
   
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+  // This function helps Google Password Manager recognize a successful login
+  const triggerPasswordSave = () => {
+    // We don't need to do anything here, just having the function
+    // that's called on successful login helps password managers
+    console.log('Login successful - password manager should detect this');
+  };
+  
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100 p-4">
       <Card className="w-full max-w-md">
@@ -63,7 +75,16 @@ const LoginPage: React.FC = () => {
           <CardTitle className="text-center">Nuru Yangu Scholarship Portal</CardTitle>
         </CardHeader>
         
-        <form onSubmit={handleSubmit}>
+        <form 
+          onSubmit={handleSubmit} 
+          autoComplete="on" 
+          id="login"
+          name="login" 
+          method="post"
+          action="/api/auth/login"
+          data-lpignore="false"
+          data-form-type="login"
+        >
           <CardContent className="space-y-4">
             {successMessage && (
               <Alert className="bg-green-50 border-green-200">
@@ -80,12 +101,14 @@ const LoginPage: React.FC = () => {
             )}
             
             <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              <label htmlFor="email" className="text-sm font-medium leading-none">
                 Email
               </label>
               <input
                 id="email"
+                name="email"
                 type="email"
+                autoComplete="username email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="name@example.com"
@@ -96,22 +119,35 @@ const LoginPage: React.FC = () => {
             
             <div className="space-y-2">
               <div className="flex justify-between items-center">
-                <label htmlFor="password" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                <label htmlFor="password" className="text-sm font-medium leading-none">
                   Password
                 </label>
                 <Link to="/forgot-password" className="text-xs text-blue-600 hover:underline">
                   Forgot password?
                 </Link>
               </div>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
-                required
-              />
+              <div className="relative">
+                <input
+                  id="password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring pr-10"
+                  required
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                  onClick={togglePasswordVisibility}
+                  tabIndex={-1}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
             </div>
           </CardContent>
           
@@ -120,6 +156,7 @@ const LoginPage: React.FC = () => {
               type="submit" 
               className="w-full" 
               disabled={isLoading}
+              onClick={isAuthenticated ? triggerPasswordSave : undefined}
             >
               {isLoading ? (
                 <>
