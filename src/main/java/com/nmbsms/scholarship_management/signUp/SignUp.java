@@ -30,7 +30,6 @@ public class SignUp {
     private String courseProgrammeName;
     private String enrolledYear;
     private Integer batchNo;
-    private String avatar;
     private String enrollmentStatus;
     private boolean profileCompleted;
     private UserRoles role;

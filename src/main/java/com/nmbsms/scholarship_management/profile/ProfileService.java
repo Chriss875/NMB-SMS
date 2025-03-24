@@ -1,22 +1,14 @@
 package com.nmbsms.scholarship_management.profile;
 
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 import com.nmbsms.scholarship_management.signUp.SignUp;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
 
 @Service
 @RequiredArgsConstructor
 public class ProfileService {
     private final ProfileRepository profileRepository;
-    private final String uploadDir;
 
     public ProfileResponse getProfile(String email){
         SignUp student= profileRepository.findByEmail(email).orElseThrow(()->new EntityNotFoundException("User not found"));
@@ -36,8 +28,8 @@ public class ProfileService {
         return profileResponse;
     }
 
-    public String updateProfile(ProfileResponse profileDTO, String email,MultipartFile avatarFile) throws IOException {
-        SignUp student=profileRepository.findByEmail(email).orElseThrow(()->new EntityNotFoundException("User not found"));
+    public String updateProfile(ProfileResponse profileDTO, String email){
+        SignUp student=profileRepository.findByEmail(email).orElseThrow(()-> new EntityNotFoundException("User not found"));
 
         if(profileDTO.getName()!= null){
             student.setName(profileDTO.getName());
@@ -64,21 +56,12 @@ public class ProfileService {
         if(profileDTO.getBatchNo()!=0){
             student.setBatchNo(profileDTO.getBatchNo());
         }
-        if (avatarFile!=null && !avatarFile.isEmpty()){
-            File dir= new File(uploadDir);
-            if(!dir.exists()) dir.mkdir();
-            String filename= email + "-" + avatarFile.getOriginalFilename();
-            Path filePath= Paths.get(uploadDir + filename);
-            Files.write(filePath, avatarFile.getBytes());
-            student.setAvatar(filePath.toString());
-        }
-
         profileRepository.save(student);
         return "Profile updated successfully";
     }
+}
 
-
-    }
+    
 
 
 
