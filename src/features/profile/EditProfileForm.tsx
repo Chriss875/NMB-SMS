@@ -1,11 +1,10 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { ProfileData } from '@/types/profile.types';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useForm } from 'react-hook-form';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, Camera, X } from 'lucide-react';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { AlertCircle } from 'lucide-react';
 
 interface EditProfileFormProps {
   profileData: ProfileData;
@@ -20,10 +19,7 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [profileImage, setProfileImage] = useState<string | undefined>(profileData.profileImage);
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   const { register, handleSubmit, formState: { errors } } = useForm({
     defaultValues: {
       name: profileData.name,
@@ -35,74 +31,11 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({
     }
   });
 
-  // Create initials from name for avatar fallback
-  const initials = profileData.name
-    .split(' ')
-    .map(part => part[0])
-    .join('')
-    .toUpperCase();
-
-  const handleImageClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Validate file is an image and size is reasonable (< 5MB)
-    if (!file.type.startsWith('image/')) {
-      setError('Please select an image file');
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      setError('Image size should be less than 5MB');
-      return;
-    }
-
-    setError(null);
-    setImageFile(file);
-    
-    // Create preview URL
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setProfileImage(e.target?.result as string);
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const clearSelectedImage = () => {
-    setProfileImage(profileData.profileImage);
-    setImageFile(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
-
   const onSubmit = async (data: any) => {
     try {
       setIsSubmitting(true);
       setError(null);
-      
-      // In a real app, you would upload the image to a storage service
-      // and get back a URL to save in the profile
-      let profileImageUrl = profileData.profileImage;
-      
-      // If a new image was selected, you would upload it here
-      if (imageFile) {
-        // Mock implementation - in a real app you would upload the file
-        // const uploadedUrl = await uploadImageToStorage(imageFile);
-        // profileImageUrl = uploadedUrl;
-        
-        // For now, just use the existing URL or the data URL as a demo
-        profileImageUrl = profileImage;
-      }
-      
-      await onSave({
-        ...data,
-        profileImage: profileImageUrl ?? undefined
-      });
+      await onSave(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred while saving profile');
     } finally {
@@ -121,46 +54,6 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({
             </Alert>
           )}
           
-          {/* Profile Image Upload */}
-          <div className="flex flex-col items-center mb-8">
-            <div className="relative">
-              <Avatar className="h-24 w-24 cursor-pointer" onClick={handleImageClick}>
-                {profileImage ? (
-                  <AvatarImage src={profileImage} alt={profileData.name} />
-                ) : (
-                  <AvatarFallback className="text-lg">{initials}</AvatarFallback>
-                )}
-                <div className="absolute bottom-0 right-0 bg-blue-600 rounded-full p-1 cursor-pointer">
-                  <Camera className="h-4 w-4 text-white" />
-                </div>
-              </Avatar>
-              
-              {imageFile && (
-                <button 
-                  type="button"
-                  onClick={clearSelectedImage}
-                  className="absolute top-0 right-0 bg-red-500 rounded-full p-1"
-                  aria-label="Remove selected image"
-                >
-                  <X className="h-4 w-4 text-white" />
-                </button>
-              )}
-            </div>
-            
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleImageChange}
-              className="hidden"
-              aria-label="Upload profile picture"
-            />
-            
-            <p className="text-sm text-gray-500 mt-2">
-              {imageFile ? 'Click to change profile picture' : 'Click to upload profile picture'}
-            </p>
-          </div>
-          
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Left column */}
             <div className="space-y-4">
@@ -175,7 +68,7 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({
                   <p className="text-red-500 text-xs mt-1">{errors.name.message?.toString()}</p>
                 )}
               </div>
-              
+
               <div className="mb-4">
                 <label htmlFor="email" className="block text-sm font-medium text-gray-500 mb-1">Email</label>
                 <input
@@ -194,7 +87,7 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({
                   <p className="text-red-500 text-xs mt-1">{errors.email.message?.toString()}</p>
                 )}
               </div>
-              
+
               <div className="mb-4">
                 <label htmlFor="mobilePhone" className="block text-sm font-medium text-gray-500 mb-1">Mobile Phone</label>
                 <input
@@ -213,7 +106,7 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({
                 )}
               </div>
             </div>
-            
+
             {/* Right column */}
             <div className="space-y-4">
               <div className="mb-4">
@@ -227,7 +120,7 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({
                   <p className="text-red-500 text-xs mt-1">{errors.universityName.message?.toString()}</p>
                 )}
               </div>
-              
+
               <div className="mb-4">
                 <label htmlFor="universityRegistrationID" className="block text-sm font-medium text-gray-500 mb-1">University Registration ID</label>
                 <input
@@ -239,7 +132,7 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({
                   <p className="text-red-500 text-xs mt-1">{errors.universityRegistrationID.message?.toString()}</p>
                 )}
               </div>
-              
+
               <div className="mb-4">
                 <label htmlFor="programName" className="block text-sm font-medium text-gray-500 mb-1">Program Name</label>
                 <input

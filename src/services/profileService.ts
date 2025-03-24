@@ -21,7 +21,6 @@ export async function getProfileData(): Promise<ProfileData> {
       enrolledYear: response.data.enrolledYear || '',
       enrollmentStatus: response.data.enrollmentStatus || 'Active',
       batchNumber: response.data.batchNo || 0,
-      profileImage: response.data.avatar || undefined
     };
     
     return mappedData;
@@ -49,7 +48,6 @@ export async function updateProfileData(data: Partial<ProfileData>): Promise<Pro
 
     console.log('Updating profile with data:', backendData);
 
-    // Send the mapped data to the backend
 
     // Re-fetch to ensure consistency
     return getProfileData();

@@ -20,7 +20,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ profileData, onEdit }) => {
           <div className="flex items-center space-x-4">
             <ProfileHeader 
               name={profileData.name} 
-              imageUrl={profileData.profileImage}
+              
             />
             <span className={`inline-flex items-center px-4 py-1.5 rounded-full text-sm font-medium transition-colors duration-150 ${
               profileData.enrollmentStatus === 'Active' 
