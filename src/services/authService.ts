@@ -161,7 +161,7 @@ const authService = {
 
   logout: async () => {
     try {
-      const response = await api.post('/auth/logout');
+      const response = await api.post('/logout');
       return response.data;
     } catch (error) {
       console.error('Logout error:', error);

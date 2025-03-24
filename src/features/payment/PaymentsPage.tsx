@@ -7,6 +7,7 @@ import { AlertCircle, CheckCircle } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import PaymentForm from './PaymentForm';
 import PaymentList from './PaymentList';
+import { paymentService } from '@/services/paymentService';
 
 // Payment types
 export type PaymentType = 'university' | 'nhif';
@@ -37,21 +38,23 @@ const PaymentsPage: React.FC = () => {
   const fetchPayments = async () => {
     setIsLoading(true);
     try {
-      // In a real app, this would be an API call
-      // const response = await api.get('/payments');
+      // Attempt to fetch from backend first
+      const fetchedPayments = await paymentService.getPayments();
+      setPayments(fetchedPayments);
       
-      // Mock data for demonstration
-      const storedPayments = localStorage.getItem('scholarshipPayments');
-      let mockPayments: Payment[] = [];
-      
-      if (storedPayments) {
-        mockPayments = JSON.parse(storedPayments);
-      }
-      
-      setPayments(mockPayments);
+      // Optionally update local cache
+      localStorage.setItem('paymentCache', JSON.stringify(fetchedPayments));
     } catch (err) {
-      setError('Failed to load payment history');
       console.error('Error fetching payments:', err);
+      
+      // Fall back to cached data if available
+      const cachedData = localStorage.getItem('paymentCache');
+      if (cachedData) {
+        setPayments(JSON.parse(cachedData));
+        setError('Using cached payment data. Pull to refresh when online.');
+      } else {
+        setError('Failed to load payment history');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -60,41 +63,33 @@ const PaymentsPage: React.FC = () => {
   const handlePaymentSubmit = async (paymentType: PaymentType, controlNumber: string) => {
     try {
       setError(null);
-      
+
       // Validate control number (should be numeric and 12 digits)
       if (!/^\d{12}$/.test(controlNumber)) {
         setError('Control number must be 12 digits');
         return;
       }
-      
-      // Create new payment object
-      const newPayment: Payment = {
-        id: Date.now().toString(),
-        type: paymentType,
-        controlNumber,
-        createdAt: new Date().toISOString(),
-        status: 'pending',
-        description: paymentType === 'university' ? 'University Fee Payment' : 'NHIF Insurance Payment'
-      };
-      
-      // In a real app, this would be an API call
-      // await api.post('/payments', newPayment);
-      
-      // Add to local state
-      const updatedPayments = [...payments, newPayment];
-      setPayments(updatedPayments);
-      
-      // Save to localStorage (for demo only)
-      localStorage.setItem('scholarshipPayments', JSON.stringify(updatedPayments));
-      
+
+      // Call the appropriate API based on payment type
+      let responseMessage: string;
+      if (paymentType === 'university') {
+        responseMessage = await paymentService.submitFeePayment(controlNumber);
+      } else if (paymentType === 'nhif') {
+        responseMessage = await paymentService.submitNhifPayment(controlNumber);
+      } else {
+        throw new Error('Invalid payment type');
+      }
+
+      // Fetch updated payments from the backend (optional)
+      await fetchPayments();
+
       // Show success message
-      setSuccessMessage(`Control number ${controlNumber} for ${paymentType === 'university' ? 'University Fee' : 'NHIF'} has been submitted successfully`);
-      
+      setSuccessMessage(responseMessage);
+
       // Clear success message after 5 seconds
       setTimeout(() => {
         setSuccessMessage(null);
       }, 5000);
-      
     } catch (err) {
       setError('Failed to submit payment information');
       console.error('Error submitting payment:', err);
