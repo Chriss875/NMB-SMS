@@ -24,13 +24,6 @@ const NotificationSettings = () => {
           </div>
           <Switch id="payment-notifications" defaultChecked />
         </div>
-        <div className="flex items-center justify-between">
-          <div>
-            <Label htmlFor="result-notifications">Results</Label>
-            <p className="text-sm text-gray-500">Notifications when new results are available</p>
-          </div>
-          <Switch id="result-notifications" defaultChecked />
-        </div>
       </CardContent>
     </Card>
   );
