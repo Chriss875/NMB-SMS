@@ -16,6 +16,7 @@ import jakarta.persistence.EntityNotFoundException;
 public class SettingsController {
     private final NotificationPreferencesService notificationPreferencesService;
     private final SignUpRepository signUpRepository;
+    private final SecurityService securityService;
 
     @GetMapping("/preferences")
     public ResponseEntity<NotificationPreferences> getPreferences() {
@@ -48,5 +49,16 @@ public class SettingsController {
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
         List<Notifications> notifications = user.getNotifications();
         return ResponseEntity.ok(notifications);
+    }
+
+    @PostMapping("/security")
+    public ResponseEntity<String> changePassword(@RequestBody SecurityDTO securityDTO) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(401).body("Authentication is required");
+        }
+        String email = authentication.getName();
+        securityService.changePassword(email, securityDTO);
+        return ResponseEntity.ok("Password changed successfully");
     }
 }
