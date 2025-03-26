@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import com.nmbsms.scholarship_management.signUp.SignUp;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -28,40 +29,43 @@ public class ProfileService {
         return profileResponse;
     }
 
-    public String updateProfile(ProfileResponse profileDTO, String email){
-        SignUp student=profileRepository.findByEmail(email).orElseThrow(()-> new EntityNotFoundException("User not found"));
+    public String updateProfile(ProfileDTO profileDTO, String email){
+        Optional<SignUp> student=profileRepository.findByEmail(email);
+        if(student.isEmpty()){
+            throw new EntityNotFoundException("User not found");
+        }
+        SignUp student1=student.get();
 
         if(profileDTO.getName()!= null){
-            student.setName(profileDTO.getName());
+            student1.setName(profileDTO.getName());
         }
         if(profileDTO.getSex()!=null){
-            student.setSex(profileDTO.getSex());
+            student1.setSex(profileDTO.getSex());
         }
         if(profileDTO.getPhoneNumber()!=null){
-            student.setPhoneNumber(profileDTO.getPhoneNumber());
+            student1.setPhoneNumber(profileDTO.getPhoneNumber());
         }
         if(profileDTO.getUniversityName()!=null){
-            student.setUniversityName(profileDTO.getUniversityName());
+            student1.setUniversityName(profileDTO.getUniversityName());
         }
         if(profileDTO.getUniversityRegistrationId()!=null){
-            student.setUniversityRegistrationId(profileDTO.getUniversityRegistrationId());
+            student1.setUniversityRegistrationId(profileDTO.getUniversityRegistrationId());
         }
         if(profileDTO.getCourseProgrammeName()!=null){
-            student.setCourseProgrammeName(profileDTO.getCourseProgrammeName());
+            student1.setCourseProgrammeName(profileDTO.getCourseProgrammeName());
         }
 
         if(profileDTO.getEnrolledYear()!=null){
-            student.setEnrolledYear(profileDTO.getEnrolledYear());
+            student1.setEnrolledYear(profileDTO.getEnrolledYear());
         }
         if(profileDTO.getBatchNo()!=0){
-            student.setBatchNo(profileDTO.getBatchNo());
+            student1.setBatchNo(profileDTO.getBatchNo());
         }
-        profileRepository.save(student);
+        profileRepository.save(student1);
         return "Profile updated successfully";
     }
 }
 
-    
 
 
 

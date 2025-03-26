@@ -20,6 +20,7 @@ public class Results {
     private LocalDateTime uploadTime;
     private String fileName;
     private String fileType;
+    private long file_size;
 
     @Lob
     private byte[] file;

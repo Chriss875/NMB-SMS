@@ -22,14 +22,14 @@ public class ProfileController {
     }
 
     @PutMapping("/info")
-    public ResponseEntity<String> updateProfileInfo(@RequestBody ProfileResponse profileDTO){
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    if (authentication == null || !authentication.isAuthenticated()) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                            .body("Authentication is required");
-    }
-    String email = authentication.getName();
-    String result = profileService.updateProfile(profileDTO, email);
-    return ResponseEntity.ok(result);
+    public ResponseEntity<String> updateProfileInfo(@RequestBody ProfileDTO profileDTO){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                                .body("Authentication is required");
+        }
+        String email = authentication.getName();
+        String result = profileService.updateProfile(profileDTO, email);
+        return ResponseEntity.ok(result);
     }
 }

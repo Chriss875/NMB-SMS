@@ -1,11 +1,17 @@
 package com.nmbsms.scholarship_management.signUp;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import lombok.*;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
-import jakarta.persistence.Column;
+import java.time.LocalDateTime;
+import jakarta.persistence.CascadeType;
+import com.nmbsms.scholarship_management.settings.NotificationPreferences;
+import com.nmbsms.scholarship_management.settings.Notifications;
+import java.util.List;
 
 @Entity
 @Getter
@@ -17,9 +23,7 @@ public class SignUp {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(unique=true,nullable=false)
     private String email;
-    @Column(nullable=true)
     private String password;
     private String token;
     private String name;
@@ -34,5 +38,14 @@ public class SignUp {
     private boolean profileCompleted;
     private UserRoles role;
     private String feeControlNumber;
+    private LocalDateTime feeControlNumberSubmittedAt;
+    private String feePaymentStatus;
     private String nhifControlNumber;
+    private LocalDateTime nhifControlNumberSubmittedAt;
+    private String nhifPaymentStatus;
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private NotificationPreferences notificationPreferences;
+    @OneToMany(mappedBy="user", cascade = CascadeType.ALL)
+    private List<Notifications> notifications;
+
 }
