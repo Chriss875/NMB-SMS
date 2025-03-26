@@ -44,7 +44,11 @@ export async function getPayments(): Promise<Payment[]> {
       return [];
     }
     
-    return response.data;
+    // Map backend payment type to frontend payment type
+    return response.data.map(payment => ({
+      ...payment,
+      type: payment.type === 'Fee Control Number' ? 'university' : 'nhif'
+    }));
   } catch (error) {
     console.error('Error fetching payments:', error);
     return []; // Return empty array on error
