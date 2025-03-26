@@ -21,7 +21,7 @@ public class SecurityService {
             throw new EntityNotFoundException("User not found");
         }
         SignUp user=student.get();
-        if(user.getPassword() != passwordEncoder.encode(securityDTO.getCurrentPassword())){
+        if(!passwordEncoder.matches(securityDTO.getCurrentPassword(), user.getPassword())){
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"Invalid credentials");
         }
         user.setPassword(passwordEncoder.encode(securityDTO.getNewPassword()));
