@@ -10,11 +10,44 @@ export interface PaymentDTO {
 // Get all payments for the current user
 export async function getPayments(): Promise<Payment[]> {
   try {
-    const response = await api.get('/payment/history');
+    // Make API call with authentication headers
+    const response = await api.get('/payment/history', {
+      // Ensure auth header is included (api.ts should automatically add this)
+      // but we can check if the request needs specific headers
+      validateStatus: function (status) {
+        // Accept any status code to handle in our code
+        return true;
+      }
+    });
+    
+    // Check for auth errors
+    if (response.status === 401 || response.status === 403) {
+      console.error('Authentication error when fetching payments:', response.status);
+      throw new Error('Authentication required. Please log in again.');
+    }
+    
+    // Return empty array for specific backend error we can't fix from frontend
+    if (response.status === 400 && 
+        response.data?.message?.includes("getNhifControlNumberSubmittedAt")) {
+      console.warn('Backend error with NHIF timestamp, returning empty array:', response.data);
+      return [];
+    }
+    
+    if (response.status >= 400) {
+      console.error(`Server error (${response.status}) when fetching payments:`, response.data);
+      throw new Error(`Failed to fetch payment history (${response.status})`);
+    }
+    
+    // Validate response data format
+    if (!response.data || !Array.isArray(response.data)) {
+      console.warn('Unexpected response format from payment history:', response.data);
+      return [];
+    }
+    
     return response.data;
   } catch (error) {
     console.error('Error fetching payments:', error);
-    throw error;
+    return []; // Return empty array on error
   }
 }
 

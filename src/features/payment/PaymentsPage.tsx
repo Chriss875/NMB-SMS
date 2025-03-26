@@ -37,23 +37,36 @@ const PaymentsPage: React.FC = () => {
 
   const fetchPayments = async () => {
     setIsLoading(true);
+    setError(null); // Clear previous errors
+    
     try {
       // Attempt to fetch from backend first
       const fetchedPayments = await paymentService.getPayments();
-      setPayments(fetchedPayments);
       
-      // Optionally update local cache
-      localStorage.setItem('paymentCache', JSON.stringify(fetchedPayments));
+      if (fetchedPayments.length > 0) {
+        setPayments(fetchedPayments);
+        // Update local cache for offline use
+        localStorage.setItem('paymentCache', JSON.stringify(fetchedPayments));
+      } else {
+        // Check if we have cached data
+        const cachedData = localStorage.getItem('paymentCache');
+        if (cachedData) {
+          setPayments(JSON.parse(cachedData));
+          setError('Unable to fetch latest payment data. Showing cached data.');
+        } else {
+          setPayments([]);
+        }
+      }
     } catch (err) {
-      console.error('Error fetching payments:', err);
+      console.error('Error in payment flow:', err);
       
       // Fall back to cached data if available
       const cachedData = localStorage.getItem('paymentCache');
       if (cachedData) {
         setPayments(JSON.parse(cachedData));
-        setError('Using cached payment data. Pull to refresh when online.');
+        setError('Network error. Showing cached payment data.');
       } else {
-        setError('Failed to load payment history');
+        setError('Failed to load payment history. Please try again later.');
       }
     } finally {
       setIsLoading(false);
