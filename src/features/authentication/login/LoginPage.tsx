@@ -151,7 +151,7 @@ const LoginPage: React.FC = () => {
             </div>
           </CardContent>
           
-          <CardFooter className="flex flex-col space-y-4">
+          <CardFooter className="flex flex-col space-y-4 pt-4"> {/* Added pt-4 for extra padding at the top */}
             <Button 
               type="submit" 
               className="w-full" 
