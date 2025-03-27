@@ -1,5 +1,5 @@
 // src/App.tsx
-import React, { Suspense } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { AuthProvider } from './contexts/AuthContext';
@@ -27,29 +27,8 @@ import AnnouncementsPage from './features/messaging/pages/AnnouncementsPage';
 import ChatsPage from './features/messaging/pages/ChatsPage';
 import CompleteProfileGuard from './features/authentication/CompleteProfileGuard';
 
-// Routes
-export const ROUTES = {
-  HOME: '/',
-  LOGIN: '/login',
-  SIGNUP: '/signup',
-  REGISTER: '/register',
-  PROFILE: '/profile',
-  SETTINGS: '/settings',
-  RESULTS: '/results',
-  PAYMENTS: '/payments',
-  MENTORSHIP: '/mentorship',
-  ANNOUNCEMENTS: '/announcements',
-  SETTINGS_PROFILE: '/settings/profile',
-  SETTINGS_NOTIFICATIONS: '/settings/notifications',
-  SETTINGS_SECURITY: '/settings/security',
-  SET_PASSWORD: '/set-password',
-  VERIFY_EMAIL: '/verify-email',
-  COMPLETE_PROFILE: '/complete-profile',
-  // Add messaging routes
-  MESSAGING: '/messaging',
-  MESSAGING_ANNOUNCEMENTS: '/messaging/announcements',
-  MESSAGING_CHATS: '/messaging/chats'
-} as const;
+// Import the ROUTES from constants instead of redefining them
+import { ROUTES } from './constants/routes';
 
 // Basic loading component
 const LoadingFallback = () => (
@@ -110,10 +89,13 @@ const App: React.FC = () => {
                   
                   {/* Messaging routes */}
                   <Route path={ROUTES.MESSAGING} element={<MessagingLayout />}>
-                    <Route index element={<Navigate to={ROUTES.ANNOUNCEMENTS} replace />} />
+                    <Route index element={<Navigate to={ROUTES.MESSAGING_ANNOUNCEMENTS} replace />} />
                     <Route path="announcements" element={<AnnouncementsPage />} />
                     <Route path="chats" element={<ChatsPage />} />
                   </Route>
+                  
+                  {/* Direct route to announcements for sidebar navigation */}
+                  <Route path={ROUTES.ANNOUNCEMENTS} element={<Navigate to={ROUTES.MESSAGING_ANNOUNCEMENTS} replace />} />
                 </Route>
                 
                 {/* Root path with smart redirection based on auth status */}

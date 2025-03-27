@@ -94,8 +94,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
             <NavigationItem 
               icon={<Bell className="h-5 w-5" />}
               label={isOpen ? "Announcements" : ""}
-              to={ROUTES.ANNOUNCEMENTS}
-              active={isActive(ROUTES.ANNOUNCEMENTS)}
+              to={ROUTES.MESSAGING_ANNOUNCEMENTS}  // Use the direct messaging/announcements path
+              active={isActive(ROUTES.MESSAGING_ANNOUNCEMENTS)}
             />
 
             <NavigationItem 
