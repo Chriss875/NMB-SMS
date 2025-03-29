@@ -19,6 +19,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Skeleton } from '@/components/ui/skeleton';
 import { paymentService } from '@/services/paymentService';
 import { Payment, PaymentType } from '@/features/payment/PaymentsPage';
+import { useProfile } from '@/hooks/useProfile';
 
 // This would be replaced with actual API calls in a real implementation
 const fetchDashboardData = async () => {
@@ -61,6 +62,7 @@ const fetchDashboardData = async () => {
 
 const HomePage = () => {
   const { user } = useAuth();
+  const { profile } = useProfile();
   const navigate = useNavigate();
   const [dashboardData, setDashboardData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -187,7 +189,7 @@ const HomePage = () => {
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
               <div>
                 <h2 className="text-2xl md:text-3xl font-bold mb-2">
-                  Welcome back, {user?.name || 'Scholar'}
+                  Welcome back, {profile?.name || user?.name || 'Scholar'}
                 </h2>
                 <p className="text-blue-100">
                   Your scholarship status: <Badge variant="secondary" className="bg-white/90 text-blue-800 ml-2">
@@ -195,33 +197,26 @@ const HomePage = () => {
                   </Badge>
                 </p>
               </div>
-              <div className="mt-4 md:mt-0">
-                <Button 
-                  variant="outline" 
-                  className="bg-white/10 text-white hover:bg-white/20 border-white/20"
-                  onClick={() => navigate('/profile')}
-                >
-                  View Profile
-                </Button>
-              </div>
             </div>
           </CardContent>
         </Card>
 
+        {/* Status Cards Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          {/* Payment Status Card */}
+          {/* Academic & Payment Status Card */}
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-lg flex items-center">
-                <Calendar className="mr-2 h-5 w-5 text-blue-600" />
-                Payment Status
+                <FileText className="mr-2 h-5 w-5 text-blue-600" />
+                Academic & Payment Status
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* University Fee Status */}
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between border-b pb-3">
                 <div>
                   <p className="font-medium">University Fee</p>
+                  <p className="text-sm text-gray-500">2024/25 Academic Year</p>
                 </div>
                 <div className="flex items-center">
                   {universityStatus.status === 'submitted' ? (
@@ -244,9 +239,10 @@ const HomePage = () => {
               </div>
 
               {/* NHIF Status */}
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between border-b pb-3">
                 <div>
                   <p className="font-medium">NHIF Payment</p>
+                  <p className="text-sm text-gray-500">Health Insurance</p>
                 </div>
                 <div className="flex items-center">
                   {nhifStatus.status === 'submitted' ? (
@@ -269,60 +265,30 @@ const HomePage = () => {
                   )}
                 </div>
               </div>
-            </CardContent>
-            <CardFooter className="pt-0">
-              <Button variant="ghost" size="sm" className="text-blue-600 p-0" onClick={() => navigate('/payments')}>
-                Submit control numbers <ArrowRight className="ml-1 h-4 w-4" />
-              </Button>
-            </CardFooter>
-          </Card>
 
-          {/* Document Status Card */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg flex items-center">
-                <FileText className="mr-2 h-5 w-5 text-blue-600" />
-                Document Status
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {dashboardData.documents.map((doc: any) => (
-                  <div key={doc.id} className="flex items-center justify-between">
-                    <span className="text-sm">{doc.name}</span>
-                    <div className="flex items-center">
-                      {doc.status === 'submitted' ? (
-                        <>
-                          <CheckCircle className="h-4 w-4 text-green-500 mr-1" />
-                          <Badge variant="secondary">Submitted</Badge>
-                        </>
-                      ) : doc.status === 'pending' ? (
-                        <>
-                          <Clock className="h-4 w-4 text-amber-500 mr-1" />
-                          <Badge variant="default">Processing</Badge>
-                        </>
-                      ) : (
-                        <>
-                          <AlertCircle className="h-4 w-4 text-red-500 mr-1" />
-                          <Badge variant="destructive">
-                            {doc.dueDate ? `Due ${formatDate(doc.dueDate)}` : 'Required'}
-                          </Badge>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                ))}
+              {/* Academic Results Status */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">Academic Results</p>
+                  <p className="text-sm text-gray-500">Previous Semester</p>
+                </div>
+                <div className="flex items-center">
+                  {dashboardData.documents.find((doc: any) => doc.name === 'Academic Transcript')?.status === 'submitted' ? (
+                    <>
+                      <CheckCircle className="h-5 w-5 text-green-500 mr-1" />
+                      <span className="text-green-600 text-sm">Submitted</span>
+                    </>
+                  ) : (
+                    <>
+                      <AlertCircle className="h-5 w-5 text-amber-500 mr-1" />
+                      <span className="text-amber-600 text-sm">Not submitted</span>
+                    </>
+                  )}
+                </div>
               </div>
             </CardContent>
-            <CardFooter className="pt-0">
-              <Button variant="ghost" size="sm" className="text-blue-600 p-0" onClick={() => navigate('/documents')}>
-                Manage documents <ArrowRight className="ml-1 h-4 w-4" />
-              </Button>
-            </CardFooter>
           </Card>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Announcements Card */}
           <Card>
             <CardHeader className="pb-2">
@@ -366,51 +332,6 @@ const HomePage = () => {
             <CardFooter className="border-t pt-2">
               <Button variant="ghost" className="w-full" onClick={() => navigate('/messaging/announcements')}>
                 View All Announcements <ChevronRight className="ml-1 h-4 w-4" />
-              </Button>
-            </CardFooter>
-          </Card>
-
-          {/* Upcoming Events Card */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg flex items-center">
-                <Clock className="mr-2 h-5 w-5 text-blue-600" />
-                Upcoming Events
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="max-h-64 overflow-hidden">
-              <ScrollArea className="h-60">
-                {dashboardData.upcomingEvents.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">No upcoming events</div>
-                ) : (
-                  <div className="space-y-4">
-                    {dashboardData.upcomingEvents.map((event: any) => (
-                      <div key={event.id} className="flex items-start p-3 border rounded-lg">
-                        <div className="bg-blue-100 rounded-md p-2 mr-3 self-start">
-                          <Calendar className="h-5 w-5 text-blue-700" />
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex justify-between">
-                            <h3 className="font-medium">{event.title}</h3>
-                            <Badge variant={
-                              event.type === 'deadline' ? 'destructive' : 
-                              event.type === 'workshop' ? 'secondary' : 
-                              'default'
-                            }>
-                              {event.type}
-                            </Badge>
-                          </div>
-                          <p className="text-sm text-gray-500 mt-1">{formatDate(event.date)}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </ScrollArea>
-            </CardContent>
-            <CardFooter className="border-t pt-2">
-              <Button variant="ghost" className="w-full" onClick={() => navigate('/calendar')}>
-                View Calendar <ChevronRight className="ml-1 h-4 w-4" />
               </Button>
             </CardFooter>
           </Card>
