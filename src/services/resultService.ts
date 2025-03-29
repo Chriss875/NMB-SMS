@@ -15,11 +15,26 @@ interface ApiResponse {
   fileName?: string;
 }
 
-export const resultService = {
-  /**
-   * Upload a result document to the server
-   */
-  uploadResult: async (file: File): Promise<UploadedResult> => {
+export interface Results {
+  id: string;
+  fileName: string;
+  fileType: string;
+  filePath: string;
+  uploadDate: string;
+  fileSize: number;
+  email: string;
+}
+
+interface ResultService {
+  uploadResult: (file: File) => Promise<UploadedResult>;
+  getUserResults: () => Promise<UploadedResult[]>;
+  deleteResult: (fileName: string) => Promise<void>;
+  getAllResults: () => Promise<UploadedResult[]>;
+  downloadResult: (resultId: string) => Promise<Blob>; // Add this line
+}
+
+class ResultServiceImpl implements ResultService {
+  async uploadResult(file: File): Promise<UploadedResult> {
     try {
       const formData = new FormData();
       formData.append('file', file); 
@@ -50,9 +65,9 @@ export const resultService = {
       console.error('Error uploading result:', error);
       throw error instanceof Error ? error : new Error('Failed to upload file');
     }
-  },
+  }
 
-  getUserResults: async (): Promise<UploadedResult[]> => {
+  async getUserResults(): Promise<UploadedResult[]> {
     try {
       // Since there's no direct endpoint to get all results, we might need to use a workaround
       // This is a placeholder that would need to be implemented properly
@@ -63,12 +78,9 @@ export const resultService = {
       // Return empty array as fallback
       return [];
     }
-  },
+  }
 
-  /**
-   * Delete a result document
-   */
-  deleteResult: async (fileName: string): Promise<void> => {
+  async deleteResult(fileName: string): Promise<void> {
     try {
       const response = await api.delete(`/results/delete/${fileName}`);
       const data: ApiResponse = response.data;
@@ -81,7 +93,27 @@ export const resultService = {
       console.error('Error deleting result:', error);
       throw error instanceof Error ? error : new Error('Failed to delete file');
     }
-  },
-};
+  }
+
+  async getAllResults(): Promise<Results[]> {
+    try {
+      const response = await api.get('/results/all');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching results:', error);
+      throw error instanceof Error ? error : new Error('Failed to fetch results');
+    }
+  }
+
+  async downloadResult(resultId: string): Promise<Blob> {
+    const response = await fetch(`/api/results/${resultId}/download`);
+    if (!response.ok) {
+      throw new Error('Download failed');
+    }
+    return await response.blob();
+  }
+}
+
+export const resultService = new ResultServiceImpl();
 
 

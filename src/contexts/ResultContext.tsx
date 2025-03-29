@@ -11,6 +11,7 @@ interface ResultContextType {
   refreshResults: () => Promise<void>;
 }
 
+
 const ResultContext = createContext<ResultContextType | undefined>(undefined);
 
 export const ResultProvider: React.FC<{children: ReactNode}> = ({ children }) => {
@@ -23,8 +24,14 @@ export const ResultProvider: React.FC<{children: ReactNode}> = ({ children }) =>
     try {
       setIsLoading(true);
       setError(null);
-      const fetchedResults = await resultService.getUserResults();
-      setResults(fetchedResults);
+      const fetchedResults = await resultService.getAllResults();
+      setResults(fetchedResults.map(result => ({
+        id: result.id,
+        fileName: result.fileName,
+        fileSize: result.fileSize,
+        fileType: result.fileType,
+        uploadDate: result.uploadDate,
+      })));
     } catch (err) {
       console.error('Error fetching results:', err);
       setError('Failed to load your results. Please try again later.');
