@@ -59,13 +59,18 @@ export const ResultProvider: React.FC<{children: ReactNode}> = ({ children }) =>
 
   const deleteResult = async (resultId: string): Promise<void> => {
     try {
+      setIsLoading(true);
       setError(null);
       await resultService.deleteResult(resultId);
       setResults(prevResults => prevResults.filter(result => result.id !== resultId));
+      // Optionally refresh the list after deletion
+      await fetchResults();
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to delete result document';
       setError(errorMessage);
       throw err;
+    } finally {
+      setIsLoading(false);
     }
   };
 

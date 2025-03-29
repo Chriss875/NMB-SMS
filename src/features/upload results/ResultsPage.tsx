@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Upload, File, CheckCircle, AlertCircle, X, Download } from 'lucide-react';
 import { useResults } from '@/contexts/ResultContext';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const ResultsPage: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
@@ -96,15 +98,23 @@ const ResultsPage: React.FC = () => {
 
   const handleDeleteResult = async (id: string) => {
     try {
-      // Clear any existing errors
       setLocalError(null);
       
-      // Call the deleteResult from context (which uses resultService)
+      // Show confirmation dialog
+      const confirmed = window.confirm('Are you sure you want to delete this file?');
+      if (!confirmed) return;
+      
+      // Call the deleteResult from context
       await deleteResult(id);
       
+      // Show success message (if you have a toast/notification system)
+      toast?.success('File deleted successfully');
+      
     } catch (err) {
-      // Set error message for display
-      setLocalError(err instanceof Error ? err.message : 'Failed to delete the file');
+      // Handle error
+      const errorMessage = err instanceof Error ? err.message : 'Failed to delete the file';
+      setLocalError(errorMessage);
+      toast?.error(errorMessage);
     }
   };
 

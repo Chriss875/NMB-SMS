@@ -1,4 +1,7 @@
 import { api } from './api';
+import axios, { AxiosError } from 'axios';
+import { ApiErrorResponse } from '../types/api';
+import { ApiError } from '@/utils/errors';
 
 export interface UploadedResult {
   id: string;
@@ -28,9 +31,9 @@ export interface Results {
 interface ResultService {
   uploadResult: (file: File) => Promise<UploadedResult>;
   getUserResults: () => Promise<UploadedResult[]>;
-  deleteResult: (fileName: string) => Promise<void>;
-  getAllResults: () => Promise<UploadedResult[]>;
-  downloadResult: (resultId: string) => Promise<Blob>; // Add this line
+  deleteResult: (id: string) => Promise<void>;
+  getAllResults: () => Promise<Results[]>;
+  downloadResult: (resultId: string) => Promise<Blob>;
 }
 
 class ResultServiceImpl implements ResultService {
@@ -80,17 +83,29 @@ class ResultServiceImpl implements ResultService {
     }
   }
 
-  async deleteResult(fileName: string): Promise<void> {
+  async deleteResult(id: string): Promise<void> {
     try {
-      const response = await api.delete(`/results/delete/${fileName}`);
-      const data: ApiResponse = response.data;
+      const response = await api.delete(`/results/delete/${id}`);
+      const data = response.data;
       
       if (data.error) {
         throw new Error(data.error);
       }
-      
+
+      if (response.status !== 204 && response.status !== 200) {
+        throw new Error(`Failed to delete file (Status: ${response.status})`);
+      }
     } catch (error) {
-      console.error('Error deleting result:', error);
+      if (axios.isAxiosError(error)) {
+        const axiosError = error as AxiosError<ApiErrorResponse>;
+        throw new ApiError(
+          axiosError.response?.data?.message || 'Failed to delete file',
+          axiosError.response?.status,
+          axiosError.code
+        );
+      }
+      
+      console.error('Unexpected error:', error);
       throw error instanceof Error ? error : new Error('Failed to delete file');
     }
   }
