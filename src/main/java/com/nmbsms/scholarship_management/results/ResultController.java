@@ -17,7 +17,7 @@ public class ResultController {
     private final ResultService resultService;
 
     @PostMapping("/upload")
-    public ResponseEntity<Map<String,String>> uploadResult(@RequestParam MultipartFile file){
+    public ResponseEntity<Map<String,String>> uploadResult(@RequestParam("file") MultipartFile file){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
