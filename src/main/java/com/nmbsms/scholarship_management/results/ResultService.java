@@ -11,6 +11,7 @@ import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 
 
+
 @Service
 @RequiredArgsConstructor
 public class ResultService {
@@ -61,7 +62,7 @@ public class ResultService {
     public void deleteResult(String fileName) throws IOException {
         Results result = resultsRepository.findByFileName(fileName).orElseThrow(() -> new IllegalArgumentException("Result not found"));
         Files.deleteIfExists(Paths.get(result.getFilePath()));
-        resultsRepository.deleteById(result.getId());
+        resultsRepository.delete(result);
     }
 
     public Results getResultByFileName(String fileName) {
