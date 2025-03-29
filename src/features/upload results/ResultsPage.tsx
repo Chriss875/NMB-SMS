@@ -6,7 +6,6 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Upload, File, CheckCircle, AlertCircle, X, Download } from 'lucide-react';
 import { useResults } from '@/contexts/ResultContext';
 
-
 const ResultsPage: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -97,9 +96,15 @@ const ResultsPage: React.FC = () => {
 
   const handleDeleteResult = async (id: string) => {
     try {
+      // Clear any existing errors
+      setLocalError(null);
+      
+      // Call the deleteResult from context (which uses resultService)
       await deleteResult(id);
+      
     } catch (err) {
-      setLocalError('Failed to delete the file');
+      // Set error message for display
+      setLocalError(err instanceof Error ? err.message : 'Failed to delete the file');
     }
   };
 
