@@ -68,18 +68,20 @@ export const resultService = {
   /**
    * Delete a result document
    */
-  deleteResult: async (resultId: string): Promise<void> => {
+  deleteResult: async (fileName: string): Promise<void> => {
     try {
-      // Updated endpoint to match Spring Controller
-      const response = await api.delete(`/results/${resultId}`);
-      
+      const response = await api.delete(`/results/delete/${fileName}`);
       const data: ApiResponse = response.data;
+      
       if (data.error) {
         throw new Error(data.error);
       }
+      
     } catch (error) {
       console.error('Error deleting result:', error);
       throw error instanceof Error ? error : new Error('Failed to delete file');
     }
   },
 };
+
+
