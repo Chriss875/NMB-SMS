@@ -9,45 +9,49 @@ export interface UploadedResult {
   downloadUrl?: string;
 }
 
+interface ApiResponse {
+  message?: string;
+  error?: string;
+  fileName?: string;
+}
+
 export const resultService = {
   /**
    * Upload a result document to the server
    */
   uploadResult: async (file: File): Promise<UploadedResult> => {
     try {
-      // Create form data for file upload
-      // The backend expects the file with parameter name "result"
       const formData = new FormData();
-      formData.append('result', file);
-      
-      // Make API call to the correct endpoint
-      const response = await api.post('/resultpdf', formData, {
+      formData.append('file', file); 
+
+      // Updated endpoint 
+      const response = await api.post('/results/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
-      
-      // Transform the response to match our UploadedResult interface
-      // Since backend returns just a string response, we'll create an object with filename
+
+      const data: ApiResponse = response.data;
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      // Create UploadedResult from response
       return {
-        id: file.name, // Using filename as ID since backend uses filename as identifier
-        fileName: file.name,
+        id: data.fileName || file.name, // Use fileName from response if available
+        fileName: data.fileName || file.name,
         fileSize: file.size,
         fileType: file.type,
         uploadDate: new Date().toISOString(),
-        downloadUrl: `/api/resultpdf/${file.name}`
+        downloadUrl: `/results/download/${data.fileName}` // Update when download endpoint is available
       };
     } catch (error) {
       console.error('Error uploading result:', error);
-      throw error;
+      throw error instanceof Error ? error : new Error('Failed to upload file');
     }
   },
-  
-  /**
-   * Get all uploaded results for the current user
-   * Note: The backend doesn't seem to have a direct endpoint for listing all results
-   * This might need to be implemented on the backend or the frontend may need to store this info
-   */
+
   getUserResults: async (): Promise<UploadedResult[]> => {
     try {
       // Since there's no direct endpoint to get all results, we might need to use a workaround
@@ -60,33 +64,22 @@ export const resultService = {
       return [];
     }
   },
-  
+
   /**
-   * Delete a result by filename
+   * Delete a result document
    */
   deleteResult: async (resultId: string): Promise<void> => {
     try {
-      // Backend uses filename as the identifier for deletion
-      await api.delete(`/resultpdf/${resultId}`);
+      // Updated endpoint to match Spring Controller
+      const response = await api.delete(`/results/${resultId}`);
+      
+      const data: ApiResponse = response.data;
+      if (data.error) {
+        throw new Error(data.error);
+      }
     } catch (error) {
       console.error('Error deleting result:', error);
-      throw error;
+      throw error instanceof Error ? error : new Error('Failed to delete file');
     }
   },
-  
-  /**
-   * Download a result document by filename
-   */
-  downloadResult: async (resultId: string): Promise<Blob> => {
-    try {
-      // Backend uses filename to retrieve the file
-      const response = await api.get(`/resultpdf/${resultId}`, {
-        responseType: 'blob',
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Error downloading result:', error);
-      throw error;
-    }
-  }
 };

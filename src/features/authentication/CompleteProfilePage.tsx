@@ -303,7 +303,7 @@ const CompleteProfilePage: React.FC = () => {
             </div>
           </CardContent>
           
-          <CardFooter className="flex justify-end space-x-2">
+          <CardFooter className="flex justify-end space-x-2 pt-6">
             <Button 
               type="submit" 
               className="w-full" 

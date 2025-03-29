@@ -14,7 +14,7 @@ export async function getPayments(): Promise<Payment[]> {
     const response = await api.get('/payment/history', {
       // Ensure auth header is included (api.ts should automatically add this)
       // but we can check if the request needs specific headers
-      validateStatus: function (status) {
+      validateStatus: function () {
         // Accept any status code to handle in our code
         return true;
       }

@@ -1,5 +1,5 @@
 // src/App.tsx
-import React, { Suspense, useEffect } from 'react';
+import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { AuthProvider } from './contexts/AuthContext';
@@ -20,6 +20,7 @@ import ResultsPage from './features/upload results/ResultsPage';
 import SignUpPage from './features/authentication/SignUpPage';
 import PaymentsPage from './features/payment/PaymentsPage';
 import MentorshipPage from './features/career-mentorship/MentorshipPage';
+import HomePage from './features/home/HomePage';  // Import the new HomePage component
 
 // Messaging Pages
 import MessagingLayout from './features/messaging/pages/MessagingLayout';
@@ -38,20 +39,20 @@ const LoadingFallback = () => (
   </div>
 );
 
-// Create a smart home page component that checks auth status
-const HomePage = () => {
+// Route guard for the home page - redirects to login if not authenticated
+const HomePageGuard = () => {
   const { isAuthenticated, isLoading } = useAuth();
   
   if (isLoading) {
     return <LoadingFallback />;
   }
   
-  // If user is authenticated, go to profile
+  // If user is authenticated, show the HomePage
   if (isAuthenticated) {
-    return <Navigate to={ROUTES.PROFILE} replace />;
+    return <HomePage />;
   }
   
-  // Otherwise, go to login
+  // If not authenticated, redirect to login
   return <Navigate to={ROUTES.LOGIN} replace />;
 };
 
@@ -81,6 +82,7 @@ const App: React.FC = () => {
                 
                 {/* Protected routes - require full authentication */}
                 <Route element={<ProtectedRoute />}>
+                  <Route path={ROUTES.HOME} element={<HomePage />} />  {/* Add HomePage to protected routes */}
                   <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
                   <Route path={ROUTES.RESULTS} element={<ResultsPage />} />
                   <Route path={ROUTES.PAYMENTS} element={<PaymentsPage />} />
@@ -98,10 +100,10 @@ const App: React.FC = () => {
                   <Route path={ROUTES.ANNOUNCEMENTS} element={<Navigate to={ROUTES.MESSAGING_ANNOUNCEMENTS} replace />} />
                 </Route>
                 
-                {/* Root path with smart redirection based on auth status */}
-                <Route path="/" element={<HomePage />} />
+                {/* Root path with guard to either home or login */}
+                <Route path="/" element={<HomePageGuard />} />
                 
-                {/* Catch-all redirect to HomePage which will handle redirection intelligently */}
+                {/* Catch-all redirect to HomePage guard */}
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </Suspense>

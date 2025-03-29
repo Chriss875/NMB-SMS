@@ -4,9 +4,9 @@ import { ProfileData } from '../types/profile.types';
 
 export async function getProfileData(): Promise<ProfileData> {
   try {
-    // Fix the path to match backend controller
+   
     const response = await api.get('/profile');
-    console.log('Profile data received:', response.data);
+    
     
     // Map backend field names to frontend field names
     const mappedData: ProfileData = {
