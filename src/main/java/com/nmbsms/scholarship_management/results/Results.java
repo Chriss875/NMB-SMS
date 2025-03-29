@@ -19,5 +19,6 @@ public class Results {
     private String fileType;
     private String email;
     private String filePath;
+    private long fileSize;
     
 }
