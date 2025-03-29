@@ -16,7 +16,7 @@ public class ResultService {
 
     private final ResultsRepository repository;
 
-    public ResponseEntity<String> uploadResult(MultipartFile file) throws IOException {
+    public ResponseEntity<String> uploadResult(MultipartFile file, String email) throws IOException {
 
         if (file == null){
             throw new NullPointerException("File cannot be empty");
@@ -33,8 +33,9 @@ public class ResultService {
                 .fileType(file.getContentType())
                 .file(ImageUtils.compressImage(file.getBytes()))
                 .uploadTime(LocalDateTime.now())
+                .file_size(file.getSize())
+                .email(email)
                 .build());
-
         return ResponseEntity.ok("File uploaded successfully: " + file.getOriginalFilename());
     }
 

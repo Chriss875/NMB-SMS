@@ -5,6 +5,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 @RestController
 @RequestMapping("/api/resultpdf")
@@ -14,7 +16,9 @@ private final ResultService resultService;
 
     @PostMapping
     public ResponseEntity<String> uploadResultPdf(@RequestParam("result") MultipartFile file) throws IOException {
-        return resultService.uploadResult(file);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        return resultService.uploadResult(file, email);
     }
 
     @GetMapping("/{fileName}")

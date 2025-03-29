@@ -21,6 +21,7 @@ public class Results {
     private String fileName;
     private String fileType;
     private long file_size;
+    private String email;
 
     @Lob
     private byte[] file;
