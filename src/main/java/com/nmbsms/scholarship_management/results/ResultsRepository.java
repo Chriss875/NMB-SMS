@@ -8,6 +8,6 @@ import java.util.Optional;
 @Repository
 public interface ResultsRepository extends JpaRepository<Results,Long>{
     List<Results> findByEmail(String email);
-    Optional<Results> findById(long id);
+    Optional<Results> findByFileName(String fileName);
 
 }

@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.HashMap;
+
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import java.io.IOException;
 
@@ -19,10 +21,10 @@ public class ResultController {
     @PostMapping("/upload")
     public ResponseEntity<Map<String,String>> uploadResult(@RequestParam("file") MultipartFile file){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                                .body(null);
-        }
+        if (authentication == null || !authentication.isAuthenticated()
+    || authentication instanceof AnonymousAuthenticationToken) {
+    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+}
         String email = authentication.getName();
         Map<String,String> response = new HashMap<>();
         try {
@@ -36,11 +38,11 @@ public class ResultController {
         }
     }
 
-    @DeleteMapping("/results/{id}")
-    public ResponseEntity<Map<String, String>> deleteResult(@PathVariable("id") Long resultId) {
+    @DeleteMapping("/delete/{fileName}")
+    public ResponseEntity<Map<String, String>> deleteResult(@PathVariable("fileName") String fileName) {
         Map<String, String> response = new HashMap<>();
         try {
-            resultService.deleteResult(resultId);
+            resultService.deleteResult(fileName);
             response.put("message", "File deleted successfully!");
             return ResponseEntity.ok(response);
         } catch (IOException e) {
