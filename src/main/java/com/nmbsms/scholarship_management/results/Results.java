@@ -3,9 +3,6 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import lombok.*;
 
-
-
-
 @Entity
 @Getter
 @Setter
@@ -20,10 +17,7 @@ public class Results {
     private LocalDateTime uploadTime;
     private String fileName;
     private String fileType;
-    private long file_size;
     private String email;
-
-    @Lob
-    private byte[] file;
+    private String filePath;
     
 }

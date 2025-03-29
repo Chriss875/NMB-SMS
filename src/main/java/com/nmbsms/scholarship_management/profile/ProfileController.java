@@ -16,6 +16,10 @@ public class ProfileController {
     @GetMapping
     public ResponseEntity<ProfileResponse> getProfile(){
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    if (authentication == null || !authentication.isAuthenticated()) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                            .body(null);
+    }
     String email = authentication.getName();
     ProfileResponse profile = profileService.getProfile(email);
     return ResponseEntity.ok(profile);

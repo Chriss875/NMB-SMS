@@ -1,68 +1,71 @@
 package com.nmbsms.scholarship_management.results;
-
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
+import java.nio.file.Paths;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import org.springframework.stereotype.Service;
+import lombok.RequiredArgsConstructor;
+import com.nmbsms.configuration.FileStorageConfig;
+import org.springframework.web.multipart.MultipartFile;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
-import java.util.Optional;
 
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 
 @Service
 @RequiredArgsConstructor
 public class ResultService {
+    private final ResultsRepository resultsRepository;
+    private final FileStorageConfig fileStorageConfig;
 
-    private final ResultsRepository repository;
-
-    public ResponseEntity<String> uploadResult(MultipartFile file, String email) throws IOException {
-
-        if (file == null){
-            throw new NullPointerException("File cannot be empty");
+    public void validateFileType(MultipartFile file){
+        String contentType=file.getContentType();
+        if(contentType==null||!contentType.startsWith("application/pdf")){
+            throw new IllegalArgumentException("Invalid file type. Only PDF files are allowed.");
         }
-        if (!"application/pdf".equals(file.getContentType())) {
-            throw new IllegalArgumentException("Only PDF files are allowed");
-        }
-        if (file.getSize() > 5 * 1024 * 1024) {
-            throw new IllegalArgumentException("File size exceeds the maximum limit of 5MB");
-        }
-
-        Results result = repository.save(Results.builder()
-                .fileName(file.getOriginalFilename())
-                .fileType(file.getContentType())
-                .file(ImageUtils.compressImage(file.getBytes()))
-                .uploadTime(LocalDateTime.now())
-                .file_size(file.getSize())
-                .email(email)
-                .build());
-        return ResponseEntity.ok("File uploaded successfully: " + file.getOriginalFilename());
-    }
-
-    public Optional<byte[]> downloadImage(String fileName) {
-        return repository.findByFileName(fileName)
-                .map(result -> ImageUtils.decompressImage(result.getFile()));
-    }
-
-    public ResponseEntity<String> deleteImage(String fileName) throws IOException {
-        Optional<Results> result = repository.findByFileName(fileName);
-        if (result.isPresent()) {
-            repository.delete(result.get());
-            return ResponseEntity.ok("File deleted successfully: " + fileName);
-        } else {
-            throw new IOException("File not found: " + fileName);
+        if(file.getSize()>(5*1024*1024)){
+            throw new IllegalArgumentException("File size exceeds 5MB.");
         }
     }
 
-    public ResponseEntity<byte[]> getResultByFileName(String fileName) {
-        Optional<Results> resultOpt = repository.findByFileName(fileName);
-        if (resultOpt.isPresent()) {
-            Results result = resultOpt.get();
-            byte[] imageData = ImageUtils.decompressImage(result.getFile());
-            return ResponseEntity.ok()
-                    .contentType(MediaType.parseMediaType(result.getFileType()))
-                    .body(imageData);
+    public String storeFile(MultipartFile file) throws IOException{
+        if(file==null || file.isEmpty()){
+            throw new IllegalArgumentException("File is empty.");
         }
-        return ResponseEntity.notFound().build();
+        String uploadDirectory = fileStorageConfig.getUploadDir();
+        String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+        if (fileName.contains("..")) {
+            throw new IllegalArgumentException("Invalid file format");
+        }
+        Path uploadPath = Paths.get(uploadDirectory);
+        if (!Files.exists(uploadPath)) {
+            Files.createDirectories(uploadPath);
+        }
+        Path filePath = uploadPath.resolve(fileName);
+        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+        return filePath.toString();
     }
+
+    public Results uploadResult(String email, MultipartFile file) throws IOException {
+        validateFileType(file);
+        String filePath = storeFile(file);
+
+        Results result = new Results();
+        result.setEmail(email);
+        result.setFileName(file.getOriginalFilename());
+        result.setFilePath(filePath);
+        result.setUploadTime(LocalDateTime.now());
+        return resultsRepository.save(result);
+    }
+
+    public void deleteResult(Long resultId) throws IOException {
+        Results result = resultsRepository.findById(resultId).orElseThrow(() -> new IllegalArgumentException("Result not found"));
+        Files.deleteIfExists(Paths.get(result.getFilePath()));
+        resultsRepository.deleteById(resultId);
+    }
+
+    public Results getResultById(Long resultId) {
+        return resultsRepository.findById(resultId)
+                .orElseThrow(() -> new IllegalArgumentException("Result not found."));
+    }
+
 }
