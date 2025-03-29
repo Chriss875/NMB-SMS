@@ -9,6 +9,8 @@ import com.nmbsms.configuration.FileStorageConfig;
 import org.springframework.web.multipart.MultipartFile;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 
 
 
@@ -70,4 +72,19 @@ public class ResultService {
                 .orElseThrow(() -> new IllegalArgumentException("Result not found."));
     }
 
+    public List<Results> getAllResults(String email) {
+        return resultsRepository.findByEmail(email);
+    }
+
+    public Optional<byte[]> downloadResult(String fileName) {
+        return resultsRepository.findByFileName(fileName)
+                .map(result -> {
+                    try {
+                        Path filePath = Paths.get(result.getFilePath());
+                        return Files.readAllBytes(filePath);
+                    } catch (IOException e) {
+                        throw new RuntimeException("Error reading file: " + fileName, e);
+                    }
+                });
+    }
 }
