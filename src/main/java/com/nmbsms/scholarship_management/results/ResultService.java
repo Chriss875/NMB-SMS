@@ -54,17 +54,18 @@ public class ResultService {
         result.setFileName(file.getOriginalFilename());
         result.setFilePath(filePath);
         result.setUploadTime(LocalDateTime.now());
-        return resultsRepository.save(result);
+        resultsRepository.save(result);
+        return result;
     }
 
-    public void deleteResult(Long resultId) throws IOException {
-        Results result = resultsRepository.findById(resultId).orElseThrow(() -> new IllegalArgumentException("Result not found"));
+    public void deleteResult(String fileName) throws IOException {
+        Results result = resultsRepository.findByFileName(fileName).orElseThrow(() -> new IllegalArgumentException("Result not found"));
         Files.deleteIfExists(Paths.get(result.getFilePath()));
-        resultsRepository.deleteById(resultId);
+        resultsRepository.deleteById(result.getId());
     }
 
-    public Results getResultById(Long resultId) {
-        return resultsRepository.findById(resultId)
+    public Results getResultByFileName(String fileName) {
+        return resultsRepository.findByFileName(fileName)
                 .orElseThrow(() -> new IllegalArgumentException("Result not found."));
     }
 
