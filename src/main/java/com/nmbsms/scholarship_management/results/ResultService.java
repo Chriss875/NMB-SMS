@@ -61,8 +61,8 @@ public class ResultService {
         return result;
     }
 
-    public void deleteResult(String fileName) throws IOException {
-        Results result = resultsRepository.findByFileName(fileName).orElseThrow(() -> new IllegalArgumentException("Result not found"));
+    public void deleteResult(long id) throws IOException {
+        Results result = resultsRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Result not found"));
         Files.deleteIfExists(Paths.get(result.getFilePath()));
         resultsRepository.delete(result);
     }

@@ -9,5 +9,5 @@ import java.util.Optional;
 public interface ResultsRepository extends JpaRepository<Results,Long>{
     List<Results> findByEmail(String email);
     Optional<Results> findByFileName(String fileName);
-
+    Optional<Results> findById(long id);
 }
