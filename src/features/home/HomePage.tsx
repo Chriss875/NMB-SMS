@@ -213,79 +213,85 @@ const HomePage = () => {
                 Academic & Payment Status
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
               {/* University Fee Status */}
-              <div className="flex items-center justify-between border-b pb-3">
-                <div>
-                  <p className="font-medium">University Fee</p>
-                  <p className="text-sm text-gray-500">2024/25 Academic Year</p>
-                </div>
-                <div className="flex items-center">
-                  {universityStatus.status === 'submitted' ? (
-                    <>
-                      <CheckCircle className="h-5 w-5 text-green-500 mr-1" />
-                      <span className="text-green-600 text-sm">{universityStatus.message}</span>
-                    </>
-                  ) : universityStatus.status === 'failed' ? (
-                    <>
-                      <AlertCircle className="h-5 w-5 text-red-500 mr-1" />
-                      <span className="text-red-600 text-sm">{universityStatus.message}</span>
-                    </>
-                  ) : (
-                    <>
-                      <AlertCircle className="h-5 w-5 text-amber-500 mr-1" />
-                      <span className="text-amber-600 text-sm">{universityStatus.message}</span>
-                    </>
-                  )}
+              <div className="rounded-lg bg-gray-50 p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-semibold text-gray-900">University Fee</h3>
+                    <p className="text-sm text-gray-500 mt-1">2024/25 Academic Year</p>
+                  </div>
+                  <div className="flex items-center">
+                    {universityStatus.status === 'submitted' ? (
+                      <Badge variant="default" className="flex items-center gap-1 bg-green-50 text-green-700 border-green-300">
+                        <CheckCircle className="h-3.5 w-3.5" />
+                        <span>{universityStatus.message}</span>
+                      </Badge>
+                    ) : universityStatus.status === 'failed' ? (
+                      <Badge variant="destructive" className="flex items-center gap-1">
+                        <AlertCircle className="h-3.5 w-3.5" />
+                        <span>{universityStatus.message}</span>
+                      </Badge>
+                    ) : (
+                      <Badge variant="secondary" className="flex items-center gap-1 bg-yellow-50 text-yellow-700 border-yellow-300">
+                        <AlertCircle className="h-3.5 w-3.5" />
+                        <span>{universityStatus.message}</span>
+                      </Badge>
+                    )}
+                  </div>
                 </div>
               </div>
 
               {/* NHIF Status */}
-              <div className="flex items-center justify-between border-b pb-3">
-                <div>
-                  <p className="font-medium">NHIF Payment</p>
-                  <p className="text-sm text-gray-500">Health Insurance</p>
-                </div>
-                <div className="flex items-center">
-                  {nhifStatus.status === 'submitted' ? (
-                    <>
-                      <CheckCircle className="h-5 w-5 text-green-500 mr-1" />
-                      <span className="text-green-600 text-sm">{nhifStatus.message}</span>
-                    </>
-                  ) : nhifStatus.status === 'failed' ? (
-                    <>
-                      <AlertCircle className="h-5 w-5 text-red-500 mr-1" />
-                      <span className="text-red-600 text-sm">{nhifStatus.message}</span>
-                    </>
-                  ) : (
-                    <>
-                      <AlertCircle className="h-5 w-5 text-amber-500 mr-1" />
-                      <span className="text-amber-600 text-sm">
-                        {nhifStatus.dueDate ? `Submit by ${formatDate(nhifStatus.dueDate)}` : nhifStatus.message}
-                      </span>
-                    </>
-                  )}
+              <div className="rounded-lg bg-gray-50 p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-semibold text-gray-900">NHIF Payment</h3>
+                    <p className="text-sm text-gray-500 mt-1">Health Insurance</p>
+                  </div>
+                  <div className="flex items-center">
+                    {nhifStatus.status === 'submitted' ? (
+                      <Badge variant="default" className="flex items-center gap-1 bg-green-50 text-green-700 border-green-300">
+                        <CheckCircle className="h-3.5 w-3.5" />
+                        <span>{nhifStatus.message}</span>
+                      </Badge>
+                    ) : nhifStatus.status === 'failed' ? (
+                      <Badge variant="destructive" className="flex items-center gap-1">
+                        <AlertCircle className="h-3.5 w-3.5" />
+                        <span>{nhifStatus.message}</span>
+                      </Badge>
+                    ) : (
+                      <Badge variant="secondary" className="flex items-center gap-1 bg-yellow-50 text-yellow-700 border-yellow-300">
+                        <AlertCircle className="h-3.5 w-3.5" />
+                        <span>
+                          {nhifStatus.dueDate ? `Submit by ${formatDate(nhifStatus.dueDate)}` : nhifStatus.message}
+                        </span>
+                      </Badge>
+                    )}
+                  </div>
                 </div>
               </div>
 
               {/* Academic Results Status */}
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">Academic Results</p>
-                  <p className="text-sm text-gray-500">Previous Semester</p>
-                </div>
-                <div className="flex items-center">
-                  {dashboardData.documents.find((doc: any) => doc.name === 'Academic Transcript')?.status === 'submitted' ? (
-                    <>
-                      <CheckCircle className="h-5 w-5 text-green-500 mr-1" />
-                      <span className="text-green-600 text-sm">Submitted</span>
-                    </>
-                  ) : (
-                    <>
-                      <AlertCircle className="h-5 w-5 text-amber-500 mr-1" />
-                      <span className="text-amber-600 text-sm">Not submitted</span>
-                    </>
-                  )}
+              <div className="rounded-lg bg-gray-50 p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-semibold text-gray-900">Academic Results</h3>
+                    <p className="text-sm text-gray-500 mt-1">Previous Semester</p>
+                  </div>
+                  <div className="flex items-center">
+                    {dashboardData.documents.find((doc: any) => doc.name === 'Academic Transcript')?.status === 'submitted' ? (
+                      <Badge variant="default" className="flex items-center gap-1 bg-green-50 text-green-700 border-green-300">
+                        <CheckCircle className="h-3.5 w-3.5" />
+                        <span>Submitted</span>
+                      </Badge>
+                    ) : (
+                      <Badge variant="secondary" className="flex items-center gap-1 bg-yellow-50 text-yellow-700 border-yellow-300">
+                        <AlertCircle className="h-3.5 w-3.5" />
+                        <span>Not submitted</span>
+                      </Badge>
+                    )}
+                  </div>
                 </div>
               </div>
             </CardContent>
