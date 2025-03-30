@@ -9,13 +9,11 @@ export const ROUTES = {
   RESULTS: '/results',
   PAYMENTS: '/payments',
   MENTORSHIP: '/mentorship',
-  ANNOUNCEMENTS: '/messaging/announcements',  // Updated to match the nested route structure
+  ANNOUNCEMENTS: '/announcements',
   SETTINGS_NOTIFICATIONS: '/settings/notifications',
   SETTINGS_SECURITY: '/settings/security',
   SET_PASSWORD: '/set-password',
   VERIFY_EMAIL: '/verify-email',
-  COMPLETE_PROFILE: '/complete-profile',
-  MESSAGING: '/messaging',
-  MESSAGING_ANNOUNCEMENTS: '/messaging/announcements',
-  MESSAGING_CHATS: '/messaging/chats'
+  COMPLETE_PROFILE: '/complete-profile'
+  
 };

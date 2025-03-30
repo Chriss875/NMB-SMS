@@ -1,14 +1,6 @@
 import React from 'react';
+import { Announcement } from '../types';
 import AnnouncementCard from './AnnouncementCard';
-
-interface Announcement {
-  id: string;
-  title: string;
-  content: string;
-  senderName: string;
-  timestamp: Date;
-  read: boolean;
-}
 
 interface AnnouncementListProps {
   announcements: Announcement[];
@@ -20,21 +12,20 @@ const AnnouncementList: React.FC<AnnouncementListProps> = ({
   onAnnouncementClick,
 }) => {
   if (announcements.length === 0) {
-    return <div className="text-center py-8 text-gray-500">No announcements yet</div>;
+    return (
+      <div className="text-center py-8 text-gray-500">
+        No announcements yet
+      </div>
+    );
   }
 
   return (
-    <div>
+    <div className="space-y-4">
       {announcements.map(announcement => (
         <AnnouncementCard 
           key={announcement.id}
-          id={announcement.id}
-          title={announcement.title}
-          content={announcement.content}
-          senderName={announcement.senderName}
-          timestamp={announcement.timestamp}
-          read={announcement.read}
-          onClick={onAnnouncementClick}
+          announcement={announcement}
+          onClick={() => onAnnouncementClick(announcement.id)}
         />
       ))}
     </div>

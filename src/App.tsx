@@ -6,6 +6,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { useAuth } from './hooks/useAuth';
 import { ProfileProvider } from './contexts/ProfileContext';
 import { ResultProvider } from './contexts/ResultContext';
+import { AnnouncementProvider } from './features/announcements/context/AnnouncementContext';
 import ProtectedRoute from './constants/ProtectedRoute';
 import SetPasswordPage from './features/authentication/SetPasswordPage';
 import EmailVerifiedGuard from './features/authentication/EmailVerifiedGuard';
@@ -21,15 +22,11 @@ import SignUpPage from './features/authentication/SignUpPage';
 import PaymentsPage from './features/payment/PaymentsPage';
 import MentorshipPage from './features/career-mentorship/MentorshipPage';
 import HomePage from './features/home/HomePage';  // Import the new HomePage component
-
-// Messaging Pages
-import MessagingLayout from './features/messaging/pages/MessagingLayout';
-import AnnouncementsPage from './features/messaging/pages/AnnouncementsPage';
-import ChatsPage from './features/messaging/pages/ChatsPage';
 import CompleteProfileGuard from './features/authentication/CompleteProfileGuard';
 
 // Import the ROUTES from constants instead of redefining them
 import { ROUTES } from './constants/routes';
+import AnnouncementsPage from './features/announcements/pages/AnnouncementsPage';
 
 // Basic loading component
 const LoadingFallback = () => (
@@ -61,53 +58,50 @@ const App: React.FC = () => {
     <AuthProvider>
       <ProfileProvider>
         <ResultProvider>
-          <Router>
-            <Suspense fallback={<LoadingFallback />}>
-              <Routes>
-                {/* Public routes */}
-                <Route path={ROUTES.LOGIN} element={<LoginPage />} />
-                <Route path={ROUTES.SIGNUP} element={<SignUpPage />} />
-                
-                {/* Protected by email verification */}
-                <Route element={<EmailVerifiedGuard />}>
-                  <Route path={ROUTES.SET_PASSWORD} element={<SetPasswordPage />} />
-                </Route>
-                
-                {/* Protected by password setup - route to complete profile */}
-                <Route element={<CompleteProfileGuard />}>
-                  <Route path={ROUTES.COMPLETE_PROFILE} element={<CompleteProfilePage />} />
-                </Route>
-                
-                <Route path={ROUTES.VERIFY_EMAIL} element={<VerifyEmailPage />} />
-                
-                {/* Protected routes - require full authentication */}
-                <Route element={<ProtectedRoute />}>
-                  <Route path={ROUTES.HOME} element={<HomePage />} />  {/* Add HomePage to protected routes */}
-                  <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
-                  <Route path={ROUTES.RESULTS} element={<ResultsPage />} />
-                  <Route path={ROUTES.PAYMENTS} element={<PaymentsPage />} />
-                  <Route path={ROUTES.MENTORSHIP} element={<MentorshipPage />} />
-                  <Route path={ROUTES.SETTINGS} element={<SettingsPage />} />
+          <AnnouncementProvider>
+            <Router>
+              <Suspense fallback={<LoadingFallback />}>
+                <Routes>
+                  {/* Public routes */}
+                  <Route path={ROUTES.LOGIN} element={<LoginPage />} />
+                  <Route path={ROUTES.SIGNUP} element={<SignUpPage />} />
                   
-                  {/* Messaging routes */}
-                  <Route path={ROUTES.MESSAGING} element={<MessagingLayout />}>
-                    <Route index element={<Navigate to={ROUTES.MESSAGING_ANNOUNCEMENTS} replace />} />
-                    <Route path="announcements" element={<AnnouncementsPage />} />
-                    <Route path="chats" element={<ChatsPage />} />
+                  {/* Protected by email verification */}
+                  <Route element={<EmailVerifiedGuard />}>
+                    <Route path={ROUTES.SET_PASSWORD} element={<SetPasswordPage />} />
                   </Route>
                   
-                  {/* Direct route to announcements for sidebar navigation */}
-                  <Route path={ROUTES.ANNOUNCEMENTS} element={<Navigate to={ROUTES.MESSAGING_ANNOUNCEMENTS} replace />} />
-                </Route>
-                
-                {/* Root path with guard to either home or login */}
-                <Route path="/" element={<HomePageGuard />} />
-                
-                {/* Catch-all redirect to HomePage guard */}
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-            </Suspense>
-          </Router>
+                  {/* Protected by password setup - route to complete profile */}
+                  <Route element={<CompleteProfileGuard />}>
+                    <Route path={ROUTES.COMPLETE_PROFILE} element={<CompleteProfilePage />} />
+                  </Route>
+                  
+                  <Route path={ROUTES.VERIFY_EMAIL} element={<VerifyEmailPage />} />
+                  
+                  {/* Protected routes - require full authentication */}
+                  <Route element={<ProtectedRoute />}>
+                    <Route path={ROUTES.HOME} element={<HomePage />} />  {/* Add HomePage to protected routes */}
+                    <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
+                    <Route path={ROUTES.RESULTS} element={<ResultsPage />} />
+                    <Route path={ROUTES.PAYMENTS} element={<PaymentsPage />} />
+                    <Route path={ROUTES.MENTORSHIP} element={<MentorshipPage />} />
+                    <Route path={ROUTES.SETTINGS} element={<SettingsPage />} />
+                    <Route path={ROUTES.ANNOUNCEMENTS} element={<AnnouncementsPage />} />
+                    
+                   
+                    {/* Direct route to announcements for sidebar navigation */}
+                    <Route path={ROUTES.ANNOUNCEMENTS} element={<Navigate to={ROUTES.ANNOUNCEMENTS} replace />} />
+                  </Route>
+                  
+                  {/* Root path with guard to either home or login */}
+                  <Route path="/" element={<HomePageGuard />} />
+                  
+                  {/* Catch-all redirect to HomePage guard */}
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </Suspense>
+            </Router>
+          </AnnouncementProvider>
         </ResultProvider>
       </ProfileProvider>
     </AuthProvider>

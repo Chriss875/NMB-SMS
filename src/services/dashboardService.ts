@@ -5,7 +5,7 @@ export interface Announcement {
   title: string;
   content: string;
   senderName: string;
-  timestamp: Date;
+  createdAt: Date;
   read: boolean;
 }
 
@@ -53,7 +53,7 @@ export const dashboardService = {
           title: 'Upcoming Scholarship Event', 
           content: 'Please join us for the upcoming scholarship event next Friday.',
           senderName: 'Admin',
-          timestamp: new Date(),
+          createdAt: new Date(),
           read: false
         },
         { 
@@ -61,7 +61,7 @@ export const dashboardService = {
           title: 'Stipend Payment Schedule',
           content: 'The next stipend payment will be processed on April 15th. Please ensure your banking details are up to date.',
           senderName: 'Finance Department',
-          timestamp: new Date(Date.now() - 86400000 * 2),
+          createdAt: new Date(Date.now() - 86400000 * 2),
           read: true
         }
       ],

@@ -112,11 +112,13 @@ class ResultServiceImpl implements ResultService {
 
   async getAllResults(): Promise<Results[]> {
     try {
-      const response = await api.get('/results/all');
+      console.log('Fetching results from API...');
+      const response = await api.get('/api/results/all');
+      console.log('API Response:', response.data);
       return response.data;
     } catch (error) {
       console.error('Error fetching results:', error);
-      throw error instanceof Error ? error : new Error('Failed to fetch results');
+      throw error;
     }
   }
 

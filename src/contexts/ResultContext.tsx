@@ -24,14 +24,21 @@ export const ResultProvider: React.FC<{children: ReactNode}> = ({ children }) =>
     try {
       setIsLoading(true);
       setError(null);
+      console.log('Fetching results...');
       const fetchedResults = await resultService.getAllResults();
-      setResults(fetchedResults.map(result => ({
+      console.log('Fetched results:', fetchedResults);
+      
+      // Map the results
+      const mappedResults = fetchedResults.map(result => ({
         id: result.id,
         fileName: result.fileName,
         fileSize: result.fileSize,
         fileType: result.fileType,
         uploadDate: result.uploadDate,
-      })));
+      }));
+      console.log('Mapped results:', mappedResults);
+      
+      setResults(mappedResults);
     } catch (err) {
       console.error('Error fetching results:', err);
       setError('Failed to load your results. Please try again later.');
@@ -41,6 +48,9 @@ export const ResultProvider: React.FC<{children: ReactNode}> = ({ children }) =>
   };
 
   useEffect(() => {
+    // Clear any cached results data
+    localStorage.removeItem('cachedResults');
+    
     fetchResults();
   }, []);
 

@@ -1,17 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
   Bell, 
-  Calendar, 
   FileText, 
-  Clock, 
-  ChevronRight,
-  ArrowRight,
   CheckCircle,
   AlertCircle
 } from 'lucide-react';
@@ -20,6 +16,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { paymentService } from '@/services/paymentService';
 import { Payment, PaymentType } from '@/features/payment/PaymentsPage';
 import { useProfile } from '@/hooks/useProfile';
+import AnnouncementCard from '@/features/announcements/components/AnnouncementCard';
+import { useAnnouncements } from '../announcements/context/AnnouncementContext';
+import { Announcement } from '../announcements/types';
+import { ROUTES } from '@/constants/routes';
 
 // This would be replaced with actual API calls in a real implementation
 const fetchDashboardData = async () => {
@@ -63,6 +63,7 @@ const fetchDashboardData = async () => {
 const HomePage = () => {
   const { user } = useAuth();
   const { profile } = useProfile();
+  const { announcements, markAnnouncementAsRead } = useAnnouncements();
   const navigate = useNavigate();
   const [dashboardData, setDashboardData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -191,11 +192,12 @@ const HomePage = () => {
                 <h2 className="text-2xl md:text-3xl font-bold mb-2">
                   Welcome back, {profile?.name || user?.name || 'Scholar'}
                 </h2>
-                <p className="text-blue-100">
-                  Your scholarship status: <Badge variant="secondary" className="bg-white/90 text-blue-800 ml-2">
+                <div className="text-blue-100 flex items-center gap-2">
+                  <span>Your scholarship status:</span>
+                  <Badge variant="secondary" className="bg-white/90 text-blue-800">
                     {dashboardData.scholarshipStatus === 'active' ? 'Active' : 'Inactive'}
                   </Badge>
-                </p>
+                </div>
               </div>
             </div>
           </CardContent>
@@ -290,55 +292,47 @@ const HomePage = () => {
           </Card>
 
           {/* Announcements Card */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg flex items-center justify-between">
-                <div className="flex items-center">
-                  <Bell className="mr-2 h-5 w-5 text-blue-600" />
-                  Recent Announcements
-                </div>
-                <Badge variant="outline" className="ml-2">
-                  {dashboardData.announcements.filter((a: any) => !a.read).length} new
-                </Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="max-h-64 overflow-hidden">
-              <ScrollArea className="h-60">
-                {dashboardData.announcements.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">No announcements yet</div>
-                ) : (
-                  <div className="space-y-4">
-                    {dashboardData.announcements.map((announcement: any) => (
-                      <div 
-                        key={announcement.id} 
-                        className={`p-3 border rounded-lg cursor-pointer hover:bg-gray-50 ${!announcement.read ? 'border-blue-500' : ''}`}
-                        onClick={() => navigate('/messaging/announcements')}
-                      >
-                        <div className="flex justify-between items-start">
-                          <h3 className="font-medium">{announcement.title}</h3>
-                          {!announcement.read && <Badge variant="default" className="ml-2">New</Badge>}
-                        </div>
-                        <p className="text-sm text-gray-500 mt-1 line-clamp-2">{announcement.content}</p>
-                        <div className="text-xs text-gray-400 mt-2 flex justify-between">
-                          <span>From: {announcement.senderName}</span>
-                          <span>{announcement.timestamp.toLocaleDateString()}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </ScrollArea>
-            </CardContent>
-            <CardFooter className="border-t pt-2">
-              <Button variant="ghost" className="w-full" onClick={() => navigate('/messaging/announcements')}>
-                View All Announcements <ChevronRight className="ml-1 h-4 w-4" />
-              </Button>
-            </CardFooter>
-          </Card>
+          {renderAnnouncementsCard()}
         </div>
       </>
     );
   };
+
+  const renderAnnouncementsCard = () => (
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-lg flex items-center justify-between">
+          <div className="flex items-center">
+            <Bell className="mr-2 h-5 w-5 text-blue-600" />
+            Recent Announcements
+          </div>
+          <Badge variant="outline" className="ml-2">
+            {announcements.filter(a => !a.read).length} new
+          </Badge>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <ScrollArea className="h-[300px] pr-4">
+          {announcements.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">No announcements yet</div>
+          ) : (
+            <div className="space-y-4">
+              {announcements.slice(0, 5).map((announcement: Announcement) => (
+                <AnnouncementCard
+                  key={announcement.id}
+                  announcement={announcement}
+                  onClick={() => {
+                    markAnnouncementAsRead(announcement.id);
+                    navigate(ROUTES.ANNOUNCEMENTS);
+                  }}
+                />
+              ))}
+            </div>
+          )}
+        </ScrollArea>
+      </CardContent>
+    </Card>
+  );
 
   return (
     <MainLayout>
