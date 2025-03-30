@@ -21,12 +21,13 @@ import ResultsPage from './features/upload results/ResultsPage';
 import SignUpPage from './features/authentication/SignUpPage';
 import PaymentsPage from './features/payment/PaymentsPage';
 import MentorshipPage from './features/career-mentorship/MentorshipPage';
-import HomePage from './features/home/HomePage';  // Import the new HomePage component
+  // Import the new HomePage component
 import CompleteProfileGuard from './features/authentication/CompleteProfileGuard';
 
 // Import the ROUTES from constants instead of redefining them
 import { ROUTES } from './constants/routes';
 import AnnouncementsPage from './features/announcements/pages/AnnouncementsPage';
+import HomePage from './features/home/pages/HomePage';
 
 // Basic loading component
 const LoadingFallback = () => (
