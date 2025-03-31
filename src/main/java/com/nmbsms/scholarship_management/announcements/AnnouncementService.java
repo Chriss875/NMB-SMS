@@ -1,12 +1,12 @@
 package com.nmbsms.scholarship_management.announcements;
-import lombok.*;
 
+import lombok.*;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+
 
 
 @Service
@@ -23,10 +23,9 @@ public class AnnouncementService {
         return announcement;
     }
 
-    public List<Announcement> getAllAnnouncements(int page, int size) {
+    public Page<Announcement> getAllAnnouncements(int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        Page<Announcement> announcementPage = announcementRepository.findAll(pageable);
-        return announcementPage.getContent();
+        return announcementRepository.findAll(pageable);
     }
     
 }

@@ -8,6 +8,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import java.time.LocalDateTime;
 
+
 @Entity
 @Getter
 @Setter
@@ -27,8 +28,9 @@ public class Announcement {
     private String senderName;
 
     private LocalDateTime createdAt;
-
-    private boolean read;
+    
+    @Builder.Default
+    private boolean isRead=false;
 
     @PrePersist
     protected void onCreate() {
