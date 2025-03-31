@@ -20,5 +20,7 @@ public class Results {
     private String email;
     private String filePath;
     private long fileSize;
+    @Builder.Default
+    private String status= "Submit Your University Transcript";
     
 }
