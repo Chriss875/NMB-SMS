@@ -2,7 +2,7 @@ package com.nmbsms.scholarship_management.home;
 
 import com.nmbsms.scholarship_management.announcements.AnnouncementService;
 import com.nmbsms.scholarship_management.payment.PaymentService;
-import com.nmbsms.scholarship_management.results.Results;
+import com.nmbsms.scholarship_management.results.ResultService;
 import com.nmbsms.scholarship_management.signUp.SignUpRepository;
 import jakarta.persistence.EntityNotFoundException;
 import com.nmbsms.scholarship_management.signUp.SignUp;
@@ -21,7 +21,7 @@ import java.util.Optional;
 public class DashboardService {
     private final AnnouncementService announcementService;
     private final PaymentService paymentService;
-    private final Results result;
+    private final ResultService resultService;
     private final SignUpRepository signUpRepository;
 
     public Map<String, Object> getDashboardData(String email) {
@@ -37,7 +37,7 @@ public class DashboardService {
         List<PaymentHistoryDTO> payments = paymentService.getPaymentHistory(email).getBody();
         dashboardData.put("payments", payments);
 
-        String resultStatus = result.getStatus();
+        String resultStatus = resultService.getResultStatus(email);
         dashboardData.put("resultStatus", resultStatus);
         return dashboardData;
     }

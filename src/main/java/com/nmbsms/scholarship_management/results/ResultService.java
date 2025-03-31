@@ -77,6 +77,14 @@ public class ResultService {
         return resultsRepository.findByEmail(email);
     }
 
+    public String getResultStatus(String email) {
+        List<Results> results = resultsRepository.findByEmail(email);
+        if (results.isEmpty()) {
+            throw new IllegalArgumentException("Result not found");
+        }
+        return results.get(0).getStatus();
+    }
+
     public Optional<byte[]> downloadResult(String fileName) {
         return resultsRepository.findByFileName(fileName)
                 .map(result -> {
