@@ -2,6 +2,7 @@ package com.nmbsms.scholarship_management.signUp;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.PrePersist;
 import lombok.*;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -9,6 +10,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+
 import com.nmbsms.scholarship_management.settings.NotificationPreferences;
 import com.nmbsms.scholarship_management.settings.Notifications;
 import java.util.List;
@@ -47,5 +50,4 @@ public class SignUp {
     private NotificationPreferences notificationPreferences;
     @OneToMany(mappedBy="user", cascade = CascadeType.ALL)
     private List<Notifications> notifications;
-
 }

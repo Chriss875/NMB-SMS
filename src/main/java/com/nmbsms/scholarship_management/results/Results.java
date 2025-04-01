@@ -20,7 +20,15 @@ public class Results {
     private String email;
     private String filePath;
     private long fileSize;
+
     @Builder.Default
-    private String status= "Submit Your University Transcript";
+    private String status= "Not Submitted";
+
+    @PrePersist
+    public void prePersist() {
+        if (status == null) {
+            status = "Not Submitted";
+        }
+    }
     
 }

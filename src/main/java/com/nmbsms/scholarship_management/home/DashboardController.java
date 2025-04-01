@@ -9,7 +9,7 @@ import org.springframework.security.core.Authentication;
 
 
 @RestController
-@RequestMapping("/api/home")
+@RequestMapping(path="/api/home")
 @RequiredArgsConstructor
 public class DashboardController {
     private final DashboardService dashboardService;
