@@ -11,6 +11,7 @@ import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Collections;
 
 
 
@@ -80,7 +81,7 @@ public class ResultService {
     public List<String> getResultStatus(String email) {
         List<Results> results = resultsRepository.findByEmail(email);
         if (results.isEmpty()) {
-            throw new IllegalArgumentException("Result not found");
+            return Collections.singletonList("Not Submitted");
         }
         return results.stream()
         .map(Results::getStatus)
