@@ -3,6 +3,7 @@ import { Announcement } from '../types';
 import { ApiError } from '@/utils/errors';
 import { AxiosError } from 'axios';
 
+// Mock data for fallback
 const MOCK_ANNOUNCEMENTS: Announcement[] = [
   {
     id: '1',
@@ -25,24 +26,43 @@ const MOCK_ANNOUNCEMENTS: Announcement[] = [
 ];
 
 export const announcementService = {
-  getAnnouncements: async (): Promise<Announcement[]> => {
+  getAnnouncements: async (page = 0, size = 10): Promise<Announcement[]> => {
     try {
-      const response = await api.get('/announcements');
+      const response = await api.get('/announcements/user', {
+        params: { page, size }
+      });
       
-      if (!response.data || !Array.isArray(response.data)) {
+      // Check if the response has a valid structure
+      if (!response.data || !response.data.announcements) {
         console.warn('Invalid response format from announcements API');
         return MOCK_ANNOUNCEMENTS;
       }
       
-      return response.data;
+      // Check if there are any announcements
+      if (!Array.isArray(response.data.announcements) || response.data.announcements.length === 0) {
+        console.log('No announcements found in database, using mock data');
+        return MOCK_ANNOUNCEMENTS;
+      }
+      
+      // Transform the data to match our frontend model
+      return response.data.announcements.map((announcement: any) => ({
+        id: announcement.id,
+        title: announcement.title,
+        content: announcement.content,
+        senderName: announcement.createdBy || 'Admin',
+        senderId: announcement.createdById || 'admin1',
+        createdAt: new Date(announcement.createdAt),
+        read: announcement.read || false
+      }));
     } catch (error) {
-      console.warn('Falling back to mock data:', error);
+      console.warn('Error fetching announcements, falling back to mock data:', error);
       return MOCK_ANNOUNCEMENTS;
     }
   },
 
   markAsRead: async (id: string): Promise<void> => {
     try {
+      // Update endpoint to match the actual API
       const response = await api.patch(`/announcements/${id}/read`);
       
       if (response.status !== 200 && response.status !== 204) {
@@ -66,15 +86,24 @@ export const announcementService = {
     }
   },
 
-  createAnnouncement: async (data: Omit<Announcement, 'id' | 'timestamp' | 'read'>): Promise<Announcement> => {
+  createAnnouncement: async (data: { title: string, content: string }): Promise<Announcement> => {
     try {
-      const response = await api.post('/announcements', data);
+      const response = await api.post('/announcements/admin', data);
       
       if (!response.data || !response.data.id) {
         throw new ApiError('Invalid response from create announcement API');
       }
       
-      return response.data;
+      // Transform the response to match our frontend model
+      return {
+        id: response.data.id,
+        title: response.data.title,
+        content: response.data.content,
+        senderName: response.data.createdBy || 'Admin',
+        senderId: response.data.createdById || 'admin1',
+        createdAt: new Date(response.data.createdAt),
+        read: false
+      };
     } catch (error: unknown) {
       console.error('Failed to create announcement:', error);
       

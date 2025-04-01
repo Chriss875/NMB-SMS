@@ -113,7 +113,7 @@ class ResultServiceImpl implements ResultService {
   async getAllResults(): Promise<Results[]> {
     try {
       console.log('Fetching results from API...');
-      const response = await api.get('/api/results/all');
+      const response = await api.get('/results/all');
       console.log('API Response:', response.data);
       return response.data;
     } catch (error) {
@@ -123,7 +123,7 @@ class ResultServiceImpl implements ResultService {
   }
 
   async downloadResult(resultId: string): Promise<Blob> {
-    const response = await fetch(`/api/results/${resultId}/download`);
+    const response = await fetch(`/results/${resultId}/download`);
     if (!response.ok) {
       throw new Error('Download failed');
     }
