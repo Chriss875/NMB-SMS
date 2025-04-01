@@ -37,7 +37,7 @@ public class DashboardService {
         List<PaymentHistoryDTO> payments = paymentService.getPaymentHistory(email).getBody();
         dashboardData.put("payments", payments);
 
-        String resultStatus = resultService.getResultStatus(email);
+        List<String> resultStatus = resultService.getResultStatus(email);
         dashboardData.put("resultStatus", resultStatus);
         return dashboardData;
     }
