@@ -57,6 +57,7 @@ public class ResultService {
         result.setFileName(file.getOriginalFilename());
         result.setFilePath(filePath);
         result.setUploadTime(LocalDateTime.now());
+        result.setStatus("Submitted");
         resultsRepository.save(result);
         return result;
     }
@@ -74,6 +75,17 @@ public class ResultService {
 
     public List<Results> getAllResults(String email) {
         return resultsRepository.findByEmail(email);
+    }
+
+    public List<String> getResultStatus(String email) {
+        List<Results> results = resultsRepository.findByEmail(email);
+        if (results.isEmpty()) {
+            throw new IllegalArgumentException("Result not found");
+        }
+        return results.stream()
+        .map(Results::getStatus)
+        .distinct()
+        .toList();
     }
 
     public Optional<byte[]> downloadResult(String fileName) {

@@ -9,6 +9,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import jakarta.persistence.CascadeType;
+
 import com.nmbsms.scholarship_management.settings.NotificationPreferences;
 import com.nmbsms.scholarship_management.settings.Notifications;
 import java.util.List;
@@ -47,5 +48,4 @@ public class SignUp {
     private NotificationPreferences notificationPreferences;
     @OneToMany(mappedBy="user", cascade = CascadeType.ALL)
     private List<Notifications> notifications;
-
 }
