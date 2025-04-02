@@ -14,6 +14,8 @@ const ResultsPage: React.FC = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
   const [isUploaded, setIsUploaded] = useState(false);
+  const [, setIsDeleting] = useState<string | null>(null);
+  const [isDownloading, setIsDownloading] = useState<string | null>(null);
   
   // Use the result context
   const { results, isLoading, error: contextError, uploadResult, deleteResult, downloadResult } = useResults();
@@ -44,6 +46,16 @@ const ResultsPage: React.FC = () => {
     const maxSizeMB = 5;
     if (file.size > maxSizeMB * 1024 * 1024) {
       setLocalError(`File size should be less than ${maxSizeMB}MB`);
+      return false;
+    }
+    
+    // Check for duplicate filenames in existing results
+    const isDuplicate = results.some(result => 
+      result.fileName.toLowerCase() === file.name.toLowerCase()
+    );
+    
+    if (isDuplicate) {
+      setLocalError('A file with this name already exists. Please rename your file before uploading.');
       return false;
     }
     
@@ -96,18 +108,19 @@ const ResultsPage: React.FC = () => {
     setIsUploaded(false);
   };
 
-  const handleDeleteResult = async (id: string) => {
+  const handleDeleteResult = async (id: string, fileName: string) => {
     try {
+      setIsDeleting(id);
       setLocalError(null);
       
       // Show confirmation dialog
       const confirmed = window.confirm('Are you sure you want to delete this file?');
       if (!confirmed) return;
       
-      // Call the deleteResult from context
-      await deleteResult(id);
+      // Call the deleteResult from context with fileName instead of id
+      await deleteResult(fileName);
       
-      // Show success message (if you have a toast/notification system)
+      // Show success message
       toast?.success('File deleted successfully');
       
     } catch (err) {
@@ -115,11 +128,14 @@ const ResultsPage: React.FC = () => {
       const errorMessage = err instanceof Error ? err.message : 'Failed to delete the file';
       setLocalError(errorMessage);
       toast?.error(errorMessage);
+    } finally {
+      setIsDeleting(null);
     }
   };
 
   const handleDownloadResult = async (id: string, fileName: string) => {
     try {
+      setIsDownloading(id);
       const blob = await downloadResult(id);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -131,6 +147,8 @@ const ResultsPage: React.FC = () => {
       document.body.removeChild(a);
     } catch (err) {
       setLocalError('Failed to download the file');
+    } finally {
+      setIsDownloading(null);
     }
   };
 
@@ -252,12 +270,16 @@ const ResultsPage: React.FC = () => {
                     <button
                       onClick={() => handleDownloadResult(result.id, result.fileName)}
                       className="text-blue-500 hover:text-blue-700"
+                      disabled={isDownloading === result.id}
                       title="Download"
                     >
-                      <Download className="h-4 w-4" />
+                      {isDownloading === result.id ? 
+                        <div className="h-4 w-4 border-2 border-t-transparent border-blue-500 rounded-full animate-spin"/> : 
+                        <Download className="h-4 w-4" />
+                      }
                     </button>
                     <button
-                      onClick={() => handleDeleteResult(result.id)}
+                      onClick={() => handleDeleteResult(result.id, result.fileName)}
                       className="text-red-500 hover:text-red-700"
                       title="Delete"
                     >

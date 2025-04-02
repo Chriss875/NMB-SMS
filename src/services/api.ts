@@ -115,3 +115,31 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    if (error.response) {
+      // Handle session expiration (401 Unauthorized)
+      if (error.response.status === 401) {
+        // Clear auth data
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('user');
+
+        // Create a custom event for session expiration
+        const event = new CustomEvent('sessionExpired', {
+          detail: {
+            message: 'Your session has expired. Please sign in again.'
+          }
+        });
+        window.dispatchEvent(event);
+
+        // Redirect to login if not already there
+        if (!window.location.pathname.includes('/login')) {
+          window.location.href = '/login';
+        }
+      }
+    }
+    return Promise.reject(error);
+  }
+);

@@ -9,7 +9,19 @@ export interface UploadedResult {
   fileSize: number;
   fileType: string;
   uploadDate: string;
+  status: string;
   downloadUrl?: string;
+}
+
+export interface Results {
+  id: string;
+  fileName: string;
+  filePath: string;
+  uploadTime: string;
+  fileType: string;
+  fileSize: number;
+  email: string;
+  status: string;
 }
 
 interface ApiResponse {
@@ -18,22 +30,12 @@ interface ApiResponse {
   fileName?: string;
 }
 
-export interface Results {
-  id: string;
-  fileName: string;
-  fileType: string;
-  filePath: string;
-  uploadDate: string;
-  fileSize: number;
-  email: string;
-}
-
 interface ResultService {
   uploadResult: (file: File) => Promise<UploadedResult>;
   getUserResults: () => Promise<UploadedResult[]>;
-  deleteResult: (id: string) => Promise<void>;
+  deleteResult: (fileName: string) => Promise<void>;
   getAllResults: () => Promise<Results[]>;
-  downloadResult: (resultId: string) => Promise<Blob>;
+  downloadResult: (fileName: string) => Promise<Blob>;
 }
 
 class ResultServiceImpl implements ResultService {
@@ -42,7 +44,6 @@ class ResultServiceImpl implements ResultService {
       const formData = new FormData();
       formData.append('file', file); 
 
-      // Updated endpoint 
       const response = await api.post('/results/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -57,12 +58,13 @@ class ResultServiceImpl implements ResultService {
 
       // Create UploadedResult from response
       return {
-        id: data.fileName || file.name, // Use fileName from response if available
+        id: data.fileName || file.name,
         fileName: data.fileName || file.name,
         fileSize: file.size,
         fileType: file.type,
         uploadDate: new Date().toISOString(),
-        downloadUrl: `/results/download/${data.fileName}` // Update when download endpoint is available
+        status: 'Submitted',
+        downloadUrl: `/results/download/${data.fileName}`
       };
     } catch (error) {
       console.error('Error uploading result:', error);
@@ -72,20 +74,32 @@ class ResultServiceImpl implements ResultService {
 
   async getUserResults(): Promise<UploadedResult[]> {
     try {
-      // Since there's no direct endpoint to get all results, we might need to use a workaround
-      // This is a placeholder that would need to be implemented properly
-      const response = await api.get('/resultpdf/list');
-      return response.data;
+      // Using the correct endpoint from the controller
+      const response = await api.get('/results/all');
+      
+      // Transform the backend Results to UploadedResult format
+      return response.data.map((result: Results) => ({
+        id: result.id,
+        fileName: result.fileName,
+        fileSize: result.fileSize,
+        fileType: result.fileType || 'application/pdf',
+        uploadDate: result.uploadTime,
+        status: result.status,
+        downloadUrl: `/results/download/${result.fileName}`
+      }));
     } catch (error) {
       console.error('Error fetching results:', error);
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        throw new Error('Authentication required');
+      }
       // Return empty array as fallback
       return [];
     }
   }
 
-  async deleteResult(id: string): Promise<void> {
+  async deleteResult(fileName: string): Promise<void> {
     try {
-      const response = await api.delete(`/results/delete/${id}`);
+      const response = await api.delete(`/results/delete/${fileName}`);
       const data = response.data;
       
       if (data.error) {
@@ -112,25 +126,28 @@ class ResultServiceImpl implements ResultService {
 
   async getAllResults(): Promise<Results[]> {
     try {
-      console.log('Fetching results from API...');
       const response = await api.get('/results/all');
-      console.log('API Response:', response.data);
       return response.data;
     } catch (error) {
       console.error('Error fetching results:', error);
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        throw new Error('Authentication required');
+      }
       throw error;
     }
   }
 
-  async downloadResult(resultId: string): Promise<Blob> {
-    const response = await fetch(`/results/${resultId}/download`);
-    if (!response.ok) {
+  async downloadResult(fileName: string): Promise<Blob> {
+    try {
+      const response = await api.get(`/results/download/${fileName}`, {
+        responseType: 'blob'
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error downloading file:', error);
       throw new Error('Download failed');
     }
-    return await response.blob();
   }
 }
 
 export const resultService = new ResultServiceImpl();
-
-

@@ -17,13 +17,21 @@ const LoginPage: React.FC = () => {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   useEffect(() => {
+    // Check for session expiration message in URL params
+    const params = new URLSearchParams(location.search);
+    if (params.get('expired')) {
+      setSuccessMessage(null); // Clear any success message
+      setError('Your session has expired. Please sign in again.');
+    }
+    
+    // Handle other location state messages
     if (location.state?.registrationSuccess) {
       setSuccessMessage('Account created successfully! Please sign in.');
     }
     if (location.state?.verificationSuccess || location.state?.profileSuccess) {
       setSuccessMessage(location.state.message || 'Your account is ready! You can now sign in.');
     }
-  }, [location.state]);
+  }, [location, setError]);
 
   // If user is already logged in, redirect to profile
   useEffect(() => {
@@ -185,3 +193,7 @@ const LoginPage: React.FC = () => {
 };
 
 export default LoginPage;
+
+function setError(_arg0: string) {
+    throw new Error('Function not implemented.');
+}

@@ -17,14 +17,30 @@ export interface DashboardData {
     dueDate?: string;
   }>;
   announcements?: Array<{
-    id: string;
+    id: number;
     title: string;
     content: string;
+    senderName: string;
     createdAt: string;
     read: boolean;
   }>;
-  payments?: Payment[];
+  payments?: Array<{
+    id: string;
+    type: string;
+    controlNumber: string;
+    createdAt: string;
+    status: string;
+    description: string;
+  }>;
   resultStatus?: string[];
+  pagination?: {
+    totalElements: number;
+    totalPages: number;
+    currentPage: number;
+    pageSize: number;
+    isFirst: boolean;
+    isLast: boolean;
+  };
 }
 
 export interface PaymentStatus {
@@ -37,7 +53,6 @@ export interface PaymentStatus {
 export const dashboardService = {
   fetchDashboardData: async (): Promise<DashboardData> => {
     try {
-      // Fetch data from backend API
       const response = await api.get('/home');
       
       if (!response.data) {
@@ -46,74 +61,69 @@ export const dashboardService = {
       
       const backendData = response.data;
       
-      // Map backend data to frontend model
       return {
-        // Default to active if not provided by backend
         scholarshipStatus: 'active',
         
-        // Process announcements from backend if available
+        // Handle the nested announcements structure with pagination info
         announcements: backendData.announcements?.content?.map((announcement: any) => ({
           id: announcement.id,
           title: announcement.title,
           content: announcement.content,
+          senderName: announcement.senderName,
           createdAt: announcement.createdAt,
           read: announcement.read || false
         })) || [],
         
-        // Include payments directly from backend
-        payments: backendData.payments || [],
+        // Extract pagination data from announcements
+        pagination: backendData.announcements ? {
+          totalElements: backendData.announcements.totalElements,
+          totalPages: backendData.announcements.totalPages,
+          currentPage: backendData.announcements.number,
+          pageSize: backendData.announcements.size,
+          isFirst: backendData.announcements.first,
+          isLast: backendData.announcements.last
+        } : undefined,
         
-        // Include result status
-        resultStatus: backendData.resultStatus || [],
+        // Handle the payments array
+        payments: backendData.payments?.map((payment: any) => ({
+          id: payment.id,
+          type: payment.type,
+          controlNumber: payment.controlNumber,
+          createdAt: payment.createdAt,
+          status: payment.status,
+          description: payment.description
+        })) || [],
         
-        // For now, we'll keep using mock data for these until available from backend
-        upcomingEvents: [
-          { id: '1', title: 'Mentorship Workshop', date: '2025-04-02', type: 'workshop' },
-          { id: '2', title: 'Quarterly Report Due', date: '2025-04-10', type: 'deadline' },
-          { id: '3', title: 'Career Fair', date: '2025-04-18', type: 'event' }
-        ],
+        // Handle resultStatus which may contain null values
+        resultStatus: Array.isArray(backendData.resultStatus) ? 
+          backendData.resultStatus.filter((status: string | null): status is string => status !== null) : 
+          [],
         
-        // Map result status to documents
+        // Initialize with empty arrays since these are not yet provided by backend
+        upcomingEvents: [],
+        
         documents: [
           { 
             id: '1', 
             name: 'Academic Transcript', 
-            status: backendData.resultStatus?.includes('transcript') ? 'submitted' : 'pending', 
-            date: '2025-02-15' 
-          },
-          { 
-            id: '2', 
-            name: 'Financial Statement', 
-            status: 'pending', 
-            date: '2025-03-10' 
-          },
-          { 
-            id: '3', 
-            name: 'Progress Report Q1', 
-            status: 'required', 
-            dueDate: '2025-04-10' 
+            status: Array.isArray(backendData.resultStatus) && 
+                  backendData.resultStatus.some((status: string | null) => status === 'Submitted') ? 
+                  'submitted' : 'pending',
+            date: new Date().toISOString().split('T')[0]
           }
         ]
       };
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
       
-      // Return fallback data
+      // Return minimal fallback data
       return {
         scholarshipStatus: 'active',
         announcements: [],
         payments: [],
         resultStatus: [],
-        upcomingEvents: [
-          { id: '1', title: 'Mentorship Workshop', date: '2025-04-02', type: 'workshop' },
-          { id: '2', title: 'Quarterly Report Due', date: '2025-04-10', type: 'deadline' },
-          { id: '3', title: 'Career Fair', date: '2025-04-18', type: 'event' }
-        ],
-        documents: [
-          { id: '1', name: 'Academic Transcript', status: 'pending', date: '2025-02-15' },
-          { id: '2', name: 'Financial Statement', status: 'pending', date: '2025-03-10' },
-          { id: '3', name: 'Progress Report Q1', status: 'required', dueDate: '2025-04-10' }
-        ]
+        upcomingEvents: [],
+        documents: []
       };
     }
   },
@@ -127,25 +137,9 @@ export const dashboardService = {
       };
     }
 
-    if (payment.status === 'completed' || payment.status === 'processing') {
-      return {
-        status: 'submitted',
-        message: 'Control number submitted',
-        controlNumber: payment.controlNumber
-      };
-    }
-
-    if (payment.status === 'failed') {
-      return {
-        status: 'failed',
-        message: 'Submission failed',
-        controlNumber: payment.controlNumber
-      };
-    }
-
     return {
-      status: 'pending',
-      message: 'Processing control number',
+      status: payment.status.toLowerCase() as 'submitted' | 'failed' | 'pending',
+      message: `Control number ${payment.status.toLowerCase()}`,
       controlNumber: payment.controlNumber
     };
   }

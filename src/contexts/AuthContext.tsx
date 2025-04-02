@@ -241,6 +241,22 @@ const login = async (email: string, password: string) => {
     
     checkAuth();
   }, []);
+
+  useEffect(() => {
+    // Listen for session expiration events
+    const handleSessionExpired = (event: CustomEvent) => {
+      setUser(null);
+      setError(event.detail.message);
+      localStorage.removeItem('user');
+      localStorage.removeItem('authToken');
+    };
+
+    window.addEventListener('sessionExpired', handleSessionExpired as EventListener);
+
+    return () => {
+      window.removeEventListener('sessionExpired', handleSessionExpired as EventListener);
+    };
+  }, []);
   
   return (
     <AuthContext.Provider 
