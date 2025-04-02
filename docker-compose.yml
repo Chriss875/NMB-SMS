@@ -1,6 +1,5 @@
 
 services:
-  
   mysql:
     image: mysql:8.0.41
     environment:
@@ -24,7 +23,7 @@ services:
       - mysql
     environment:
       - SPRING_PROFILES_ACTIVE=docker
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/scholarship_management_db?autoReconnect=true&useSSL=false
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/scholarship_management_db?autoReconnect=true&useSSL=false&allowPublicKeyRetrieval=true
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=12345678
     networks:
