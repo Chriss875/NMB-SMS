@@ -40,11 +40,11 @@ public class ResultController {
         }
     }
 
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Map<String, String>> deleteResult(@PathVariable("id") long id) {
+    @DeleteMapping("/delete/{fileName}")
+    public ResponseEntity<Map<String, String>> deleteResult(@PathVariable("fileName") String fileName) {
         Map<String, String> response = new HashMap<>();
         try {
-            resultService.deleteResult(id);
+            resultService.deleteResult(fileName);
             response.put("message", "File deleted successfully!");
             return ResponseEntity.ok(response);
         } catch (IOException e) {
