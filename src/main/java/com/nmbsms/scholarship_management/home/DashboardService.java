@@ -15,6 +15,7 @@ import org.springframework.data.domain.Page;
 import java.util.List;
 import com.nmbsms.scholarship_management.payment.PaymentHistoryDTO;
 import java.util.Optional;
+import com.nmbsms.scholarship_management.signUp.SignUpService;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +24,7 @@ public class DashboardService {
     private final PaymentService paymentService;
     private final ResultService resultService;
     private final SignUpRepository signUpRepository;
+    private final SignUpService  signUpService;
 
     public Map<String, Object> getDashboardData(String email) {
         Optional<SignUp> signUp = signUpRepository.findByEmail(email);
@@ -39,6 +41,9 @@ public class DashboardService {
 
         List<String> resultStatus = resultService.getResultStatus(email);
         dashboardData.put("resultStatus", resultStatus);
+
+        String enrollmentStatus= signUpService.getEnrollmentStatus(email);
+        dashboardData.put("enrollment status",enrollmentStatus);
         return dashboardData;
     }
 }

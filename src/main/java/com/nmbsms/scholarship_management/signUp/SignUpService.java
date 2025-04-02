@@ -64,6 +64,7 @@ public class SignUpService {
             student.setEmail(signUpDTO.getEmail());
             student.setName(signUpDTO.getName());
             student.setSex(signUpDTO.getSex());
+            student.setEnrollmentStatus("Active");
             student.setPhoneNumber(signUpDTO.getPhoneNumber());
             student.setUniversityName(signUpDTO.getUniversityName());
             student.setUniversityRegistrationId(signUpDTO.getUniversityRegistrationId());
@@ -122,5 +123,14 @@ public class SignUpService {
         student.setPassword(passwordEncoder.encode(resetPasswordDTO.getNewPassword()));
         signUpRepository.save(student);
         return ResponseEntity.ok("Password reset successfully");
+    }
+
+    public String getEnrollmentStatus(String email){
+        Optional<SignUp> user=signUpRepository.findByEmail(email);
+        if(user.isEmpty()){
+            throw new EntityNotFoundException("User not found");
+        }
+        SignUp student=user.get();
+        return student.getEnrollmentStatus();
     }
 }
