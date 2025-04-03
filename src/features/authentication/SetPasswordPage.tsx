@@ -122,7 +122,7 @@ const SetPasswordPage: React.FC = () => {
         </CardHeader>
         
         <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-6"> {/* Increased from space-y-4 to space-y-6 for more spacing between form elements */}
             {(formError || error) && (
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
@@ -190,7 +190,7 @@ const SetPasswordPage: React.FC = () => {
             </div>
           </CardContent>
           
-          <CardFooter className="flex flex-col space-y-4">
+          <CardFooter className="flex flex-col space-y-4 pt-5"> {/* Added pt-4 for top padding */}
             <Button 
               type="submit" 
               className="w-full" 
@@ -209,8 +209,8 @@ const SetPasswordPage: React.FC = () => {
               )}
             </Button>
             
-            <div className="text-center text-sm">
-              <Link to={ROUTES.SIGNUP} className="flex items-center justify-center text-blue-600 hover:underline">
+            <div className="text-center text-sm mt-2"> {/* Added mt-2 for additional spacing */}
+              <Link to={ROUTES.SIGNUP} className="flex items-center justify-center text-blue-600 hover:underline py-1"> {/* Added py-1 for vertical padding */}
                 <ArrowLeft className="mr-1 h-4 w-4" />
                 Back to Sign Up
               </Link>
