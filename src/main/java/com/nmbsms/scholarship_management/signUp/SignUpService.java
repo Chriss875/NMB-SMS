@@ -5,8 +5,6 @@ import java.util.Optional;
 import com.nmbsms.security.JwtService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
 import com.nmbsms.exception.InvalidCredentialsException;
 
 
