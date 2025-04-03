@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import MainLayout from '../../components/layout/MainLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,8 +7,11 @@ import { Upload, File, CheckCircle, AlertCircle, X, Download } from 'lucide-reac
 import { useResults } from '@/contexts/ResultContext';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { useAuth } from '@/contexts/AuthContext'; // Import your auth context
 
 const ResultsPage: React.FC = () => {
+  // Add auth user to dependencies
+  const { user } = useAuth();
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -19,6 +22,17 @@ const ResultsPage: React.FC = () => {
   
   // Use the result context
   const { results, isLoading, error: contextError, uploadResult, deleteResult, downloadResult } = useResults();
+  
+  // Add effect to refetch results when user changes
+  useEffect(() => {
+    // Clear any old data when user changes
+    setFile(null);
+    setIsUploaded(false);
+    setLocalError(null);
+    
+    // No need to fetch results here - the context will handle it
+    // Remove the fetchResults() call from here
+  }, [user]); // No need for fetchResults in dependencies
   
   // Combine errors from context and local state
   const error = localError || contextError;

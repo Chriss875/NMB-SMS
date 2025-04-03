@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { UploadedResult, resultService } from '../services/resultService';
+import { useAuth } from './AuthContext';
 
 interface ResultContextType {
   results: UploadedResult[];
@@ -8,7 +9,7 @@ interface ResultContextType {
   uploadResult: (file: File) => Promise<UploadedResult>;
   deleteResult: (resultId: string) => Promise<void>;
   downloadResult: (resultId: string) => Promise<Blob>;
-  refreshResults: () => Promise<void>;
+  refreshResults: (force?: boolean) => Promise<void>; // Update to accept force parameter
 }
 
 
@@ -19,8 +20,20 @@ export const ResultProvider: React.FC<{children: ReactNode}> = ({ children }) =>
   const [results, setResults] = useState<UploadedResult[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [lastFetchTime, setLastFetchTime] = useState<number | null>(null);
+  const { user } = useAuth(); // Add this to track user changes
 
-  const fetchResults = async () => {
+  const fetchResults = async (force = false) => {
+    // Implement fetch throttling - only fetch if:
+    // 1. We're forced to fetch, or
+    // 2. It's been more than 30 seconds since the last fetch, or
+    // 3. We've never fetched before
+    const now = Date.now();
+    if (!force && lastFetchTime && now - lastFetchTime < 30000) {
+      console.log('Skipping fetch, too soon since last fetch');
+      return;
+    }
+    
     try {
       setIsLoading(true);
       setError(null);
@@ -34,11 +47,12 @@ export const ResultProvider: React.FC<{children: ReactNode}> = ({ children }) =>
         fileName: result.fileName,
         fileSize: result.fileSize,
         fileType: result.fileType,
-        uploadDate: result.uploadDate,
+        uploadDate: result.uploadTime,
+        status: result.status || 'completed' 
       }));
-      console.log('Mapped results:', mappedResults);
       
       setResults(mappedResults);
+      setLastFetchTime(now);
     } catch (err) {
       console.error('Error fetching results:', err);
       setError('Failed to load your results. Please try again later.');
@@ -47,12 +61,15 @@ export const ResultProvider: React.FC<{children: ReactNode}> = ({ children }) =>
     }
   };
 
+  // Only fetch on user change, not on every render
   useEffect(() => {
-    // Clear any cached results data
-    localStorage.removeItem('cachedResults');
-    
-    fetchResults();
-  }, []);
+    if (user) {
+      fetchResults();
+    } else {
+      // Clear results when user logs out
+      setResults([]);
+    }
+  }, [user]); // Only dependency is user, not fetchResults
 
   const uploadResult = async (file: File): Promise<UploadedResult> => {
     try {
@@ -104,7 +121,7 @@ export const ResultProvider: React.FC<{children: ReactNode}> = ({ children }) =>
         uploadResult,
         deleteResult,
         downloadResult,
-        refreshResults: fetchResults
+        refreshResults: (force = false) => fetchResults(force) // Pass through the force parameter
       }}
     >
       {children}

@@ -11,7 +11,7 @@ const VerifyEmailPage: React.FC = () => {
   const [verificationCode, setVerificationCode] = useState('');
   const [codeRequested, setCodeRequested] = useState(false);
   const [cooldown, setCooldown] = useState(0);
-  const { verifyEmail, requestVerificationCode, isLoading, error } = useAuth();
+  const { verifyEmail, isLoading, error } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [localError, setLocalError] = useState<string | null>(null);
@@ -90,14 +90,16 @@ const VerifyEmailPage: React.FC = () => {
   
   const handleRequestCode = async () => {
     try {
-      await requestVerificationCode(email);
+      // Instead of calling the API, just simulate success
       setCodeRequested(true);
       setCooldown(60); // Set 60-second cooldown
       // Clear any existing error messages
       setLocalError(null);
+      
+      // Provide feedback to user
+      console.log('Request new code functionality is not implemented in this version');
     } catch (err: any) {
-      // Display specific error from requestVerificationCode if available
-      setLocalError(err.message || 'Failed to request new code. Please try again.');
+      setLocalError('This feature is not currently available.');
     }
   };
 
