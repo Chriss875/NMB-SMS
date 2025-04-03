@@ -7,6 +7,7 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
+import com.nmbsms.exception.InvalidCredentialsException;
 
 
 @Service
@@ -27,12 +28,12 @@ public class SignUpService {
     }
 
     public ResponseEntity<String> initialSignUp(InitialSignUpDTO initialSignUpDTO){
-        if(initialSignUpDTO.getEmail()==null || initialSignUpDTO.getToken()==null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Invalid credentials");
+        Optional<SignUp> signUp=signUpRepository.findByEmail(initialSignUpDTO.getEmail());
+        if(initialSignUpDTO.getEmail()==null || initialSignUpDTO.getToken()==null || !initialSignUpDTO.getToken().equals(signUp.get().getToken()) || !initialSignUpDTO.getEmail().equals(signUp.get().getEmail())) {
+            throw new InvalidCredentialsException("BAD_REQUEST", "Invalid credentials");
         }
-        Optional<SignUp> existingStudent=signUpRepository.findByEmailAndToken(initialSignUpDTO.getEmail(), initialSignUpDTO.getToken());
-        if(existingStudent.isPresent()){
-            SignUp student=existingStudent.get();
+        if(signUp.isPresent()){
+            SignUp student=signUp.get();
             student.setToken(initialSignUpDTO.getToken());
             student.setEmail(initialSignUpDTO.getEmail());
             signUpRepository.save(student);
@@ -43,7 +44,7 @@ public class SignUpService {
 
     public ResponseEntity<String> setPassword(CreatePasswordDTO createPasswordDTO){
         if(createPasswordDTO.getPassword()==null|| createPasswordDTO.getEmail()==null){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Invalid credentials");
+            throw new InvalidCredentialsException("BAD_REQUEST", "Invalid credentials");
         }
         Optional<SignUp> existingStudent=signUpRepository.findByEmail(createPasswordDTO.getEmail());
         if(existingStudent.isEmpty()){
@@ -84,7 +85,7 @@ public class SignUpService {
 
     public ResponseEntity<LoginResponseDTO> login(LoginDTO loginDTO){
     if (loginDTO == null || loginDTO.getEmail() == null || loginDTO.getPassword() == null) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Credentials can not be empty");
+        throw new InvalidCredentialsException("BAD_REQUEST", "Credentials can not be empty");
     }
 
     String email = loginDTO.getEmail().trim();
@@ -110,7 +111,7 @@ public class SignUpService {
         return ResponseEntity.ok(loginResponseDTO);
 
     } else {
-        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"Invalid credentials");
+        throw new InvalidCredentialsException("UNAUTHORIZED", "Invalid credentials");
     }
 }
 
