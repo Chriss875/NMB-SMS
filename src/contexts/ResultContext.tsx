@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { UploadedResult, resultService } from '../services/resultService';
 import { useAuth } from './AuthContext';
+import { useUserData } from './UserDataContext';
 
 interface ResultContextType {
   results: UploadedResult[];
@@ -12,36 +13,24 @@ interface ResultContextType {
   refreshResults: (force?: boolean) => Promise<void>; // Update to accept force parameter
 }
 
-
 const ResultContext = createContext<ResultContextType | undefined>(undefined);
 
 export const ResultProvider: React.FC<{children: ReactNode}> = ({ children }) => {
-  console.log('ResultProvider is rendering');
   const [results, setResults] = useState<UploadedResult[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [lastFetchTime, setLastFetchTime] = useState<number | null>(null);
-  const { user } = useAuth(); // Add this to track user changes
+  const { user } = useAuth();
+  const { isLoading: isAppLoading } = useUserData();
 
-  const fetchResults = async (force = false) => {
-    // Implement fetch throttling - only fetch if:
-    // 1. We're forced to fetch, or
-    // 2. It's been more than 30 seconds since the last fetch, or
-    // 3. We've never fetched before
-    const now = Date.now();
-    if (!force && lastFetchTime && now - lastFetchTime < 30000) {
-      console.log('Skipping fetch, too soon since last fetch');
-      return;
-    }
+  const fetchResults = async (_force = false) => {
+    // Skip if the app is already loading data centrally
+    if (isAppLoading) return;
     
     try {
       setIsLoading(true);
       setError(null);
-      console.log('Fetching results...');
       const fetchedResults = await resultService.getAllResults();
-      console.log('Fetched results:', fetchedResults);
       
-      // Map the results
       const mappedResults = fetchedResults.map(result => ({
         id: result.id,
         fileName: result.fileName,
@@ -52,7 +41,6 @@ export const ResultProvider: React.FC<{children: ReactNode}> = ({ children }) =>
       }));
       
       setResults(mappedResults);
-      setLastFetchTime(now);
     } catch (err) {
       console.error('Error fetching results:', err);
       setError('Failed to load your results. Please try again later.');
@@ -61,15 +49,14 @@ export const ResultProvider: React.FC<{children: ReactNode}> = ({ children }) =>
     }
   };
 
-  // Only fetch on user change, not on every render
+  // Only fetch once the app's central loading is done
   useEffect(() => {
-    if (user) {
+    if (user && !isAppLoading) {
       fetchResults();
-    } else {
-      // Clear results when user logs out
+    } else if (!user) {
       setResults([]);
     }
-  }, [user]); // Only dependency is user, not fetchResults
+  }, [user, isAppLoading]);
 
   const uploadResult = async (file: File): Promise<UploadedResult> => {
     try {
@@ -129,7 +116,6 @@ export const ResultProvider: React.FC<{children: ReactNode}> = ({ children }) =>
   );
 };
 
-// IMPORTANT: This export is what's missing and causing the error
 export const useResults = (): ResultContextType => {
   const context = useContext(ResultContext);
   if (context === undefined) {

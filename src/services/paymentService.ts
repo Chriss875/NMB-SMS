@@ -7,36 +7,24 @@ export interface PaymentDTO {
   nhifControlNumber?: string;
 }
 
+// Implement caching
+let cachedPayments: Payment[] | null = null;
+let lastFetchTime: number | null = null;
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache TTL
+
 // Get all payments for the current user
-export async function getPayments(): Promise<Payment[]> {
+const getPayments = async (): Promise<Payment[]> => {
+  const now = Date.now();
+  
+  // Return cached results if they're fresh
+  if (cachedPayments && lastFetchTime && now - lastFetchTime < CACHE_TTL) {
+    console.log('Using cached payments');
+    return cachedPayments;
+  }
+  
   try {
     // Make API call with authentication headers
-    const response = await api.get('/payment/history', {
-      // Ensure auth header is included (api.ts should automatically add this)
-      // but we can check if the request needs specific headers
-      validateStatus: function () {
-        // Accept any status code to handle in our code
-        return true;
-      }
-    });
-    
-    // Check for auth errors
-    if (response.status === 401 || response.status === 403) {
-      console.error('Authentication error when fetching payments:', response.status);
-      throw new Error('Authentication required. Please log in again.');
-    }
-    
-    // Return empty array for specific backend error we can't fix from frontend
-    if (response.status === 400 && 
-        response.data?.message?.includes("getNhifControlNumberSubmittedAt")) {
-      console.warn('Backend error with NHIF timestamp, returning empty array:', response.data);
-      return [];
-    }
-    
-    if (response.status >= 400) {
-      console.error(`Server error (${response.status}) when fetching payments:`, response.data);
-      throw new Error(`Failed to fetch payment history (${response.status})`);
-    }
+    const response = await api.get('/payment/history');
     
     // Validate response data format
     if (!response.data || !Array.isArray(response.data)) {
@@ -44,19 +32,24 @@ export async function getPayments(): Promise<Payment[]> {
       return [];
     }
     
-    // Map backend payment type to frontend payment type
-    return response.data.map(payment => ({
+    // Map backend payment type to frontend payment type and update cache
+    const payments = response.data.map(payment => ({
       ...payment,
       type: payment.type === 'Fee Control Number' ? 'university' : 'nhif'
     }));
+    
+    cachedPayments = payments;
+    lastFetchTime = now;
+    
+    return payments;
   } catch (error) {
     console.error('Error fetching payments:', error);
-    return []; // Return empty array on error
+    throw error;
   }
-}
+};
 
 // Submit a university fee payment
-export async function submitFeePayment(controlNumber: string): Promise<string> {
+const submitFeePayment = async (controlNumber: string): Promise<string> => {
   try {
     if (!controlNumber || controlNumber.trim() === '') {
       throw new Error('Control number cannot be empty');
@@ -66,17 +59,21 @@ export async function submitFeePayment(controlNumber: string): Promise<string> {
       feeControlNumber: controlNumber.trim()
     };
     
-    console.log('Sending payment data:', paymentData);
     const response = await api.post('/payment/submit-fee', paymentData);
+    
+    // Update cache - invalidate it so next fetch gets fresh data
+    cachedPayments = null;
+    lastFetchTime = null;
+    
     return response.data;
   } catch (error) {
     console.error('Error submitting fee payment:', error);
     throw error;
   }
-}
+};
 
 // Submit an NHIF payment
-export async function submitNhifPayment(controlNumber: string): Promise<string> {
+const submitNhifPayment = async (controlNumber: string): Promise<string> => {
   try {
     if (!controlNumber || controlNumber.trim() === '') {
       throw new Error('Control number cannot be empty');
@@ -87,12 +84,17 @@ export async function submitNhifPayment(controlNumber: string): Promise<string> 
     };
     
     const response = await api.post('/payment/submit-nhif', paymentData);
+    
+    // Update cache - invalidate it so next fetch gets fresh data
+    cachedPayments = null;
+    lastFetchTime = null;
+    
     return response.data;
   } catch (error) {
     console.error('Error submitting NHIF payment:', error);
     throw error;
   }
-}
+};
 
 export const paymentService = {
   getPayments,

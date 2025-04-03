@@ -12,6 +12,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onSubmit }) => {
   const [nhifControlNumber, setNhifControlNumber] = useState('');
   const [universityFormError, setUniversityFormError] = useState<string | null>(null);
   const [nhifFormError, setNhifFormError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const validateControlNumber = (controlNumber: string): boolean => {
     if (!controlNumber.trim()) {
@@ -22,7 +23,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onSubmit }) => {
     return /^\d{12}$/.test(controlNumber);
   };
 
-  const handleUniversitySubmit = (e: React.FormEvent) => {
+  const handleUniversitySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setUniversityFormError(null);
     
@@ -31,11 +32,19 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onSubmit }) => {
       return;
     }
     
-    onSubmit('university', universityControlNumber);
-    setUniversityControlNumber('');
+    try {
+      setIsSubmitting(true);
+      await onSubmit('university', universityControlNumber);
+      // Clear form on success
+      setUniversityControlNumber('');
+    } catch (error) {
+      // Error is handled by the context
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleNHIFSubmit = (e: React.FormEvent) => {
+  const handleNhifSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setNhifFormError(null);
     
@@ -44,93 +53,87 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onSubmit }) => {
       return;
     }
     
-    onSubmit('nhif', nhifControlNumber);
-    setNhifControlNumber('');
-  };
-
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    setter: React.Dispatch<React.SetStateAction<string>>,
-    errorSetter: React.Dispatch<React.SetStateAction<string | null>>
-  ) => {
-    const value = e.target.value;
-    
-    // Only allow numeric input
-    if (/^\d*$/.test(value)) {
-      setter(value);
-      errorSetter(null);
+    try {
+      setIsSubmitting(true);
+      await onSubmit('nhif', nhifControlNumber);
+      // Clear form on success
+      setNhifControlNumber('');
+    } catch (error) {
+      // Error is handled by the context
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      {/* University Fees Payment Form */}
-      <div className="bg-white p-4 rounded-lg border border-gray-200">
-        <div className="flex items-center mb-4">
-          <div className="bg-blue-100 p-2 rounded-full mr-3">
-            <CircleDollarSign className="h-6 w-6 text-blue-600" />
-          </div>
-          <h3 className="font-medium text-gray-800">University Fee</h3>
+    <div className="grid gap-6 md:grid-cols-2">
+      {/* University Fee Payment Form */}
+      <form onSubmit={handleUniversitySubmit} className="space-y-4 p-4 border rounded-lg border-blue-100 bg-blue-50">
+        <div className="flex items-center gap-2 text-blue-700 font-medium">
+          <CircleDollarSign className="h-5 w-5" />
+          <h3>University Fee Payment</h3>
         </div>
         
-        <form onSubmit={handleUniversitySubmit}>
-          <div className="mb-4">
-            <label htmlFor="universityControlNumber" className="block text-sm font-medium text-gray-700 mb-1">
-              Control Number
-            </label>
-            <input
-              id="universityControlNumber"
-              type="text"
-              value={universityControlNumber}
-              onChange={(e) => handleInputChange(e, setUniversityControlNumber, setUniversityFormError)}
-              maxLength={12}
-              placeholder="12 digit number"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            {universityFormError && (
-              <p className="mt-1 text-sm text-red-600">{universityFormError}</p>
-            )}
-            <p className="mt-1 text-xs text-gray-500">Enter the 12-digit control number provided by your university.</p>
-          </div>
-          <Button type="submit" className="w-full">
-            Submit University Payment
-          </Button>
-        </form>
-      </div>
+        <div>
+          <label htmlFor="universityControlNumber" className="block text-sm font-medium text-gray-700 mb-1">
+            Control Number
+          </label>
+          <input
+            id="universityControlNumber"
+            type="text"
+            value={universityControlNumber}
+            onChange={(e) => setUniversityControlNumber(e.target.value)}
+            placeholder="Enter 12-digit control number"
+            className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+            maxLength={12}
+          />
+          {universityFormError && (
+            <p className="mt-1 text-sm text-red-600">{universityFormError}</p>
+          )}
+        </div>
+        
+        <Button 
+          type="submit"
+          disabled={isSubmitting}
+          className="w-full bg-blue-600 hover:bg-blue-700"
+        >
+          {isSubmitting ? 'Submitting...' : 'Submit University Fee'}
+        </Button>
+      </form>
       
       {/* NHIF Payment Form */}
-      <div className="bg-white p-4 rounded-lg border border-gray-200">
-        <div className="flex items-center mb-4">
-          <div className="bg-green-100 p-2 rounded-full mr-3">
-            <Shield className="h-6 w-6 text-green-600" />
-          </div>
-          <h3 className="font-medium text-gray-800">NHIF Insurance</h3>
+      <form onSubmit={handleNhifSubmit} className="space-y-4 p-4 border rounded-lg border-green-100 bg-green-50">
+        <div className="flex items-center gap-2 text-green-700 font-medium">
+          <Shield className="h-5 w-5" />
+          <h3>NHIF Payment</h3>
         </div>
         
-        <form onSubmit={handleNHIFSubmit}>
-          <div className="mb-4">
-            <label htmlFor="nhifControlNumber" className="block text-sm font-medium text-gray-700 mb-1">
-              Control Number
-            </label>
-            <input
-              id="nhifControlNumber"
-              type="text"
-              value={nhifControlNumber}
-              onChange={(e) => handleInputChange(e, setNhifControlNumber, setNhifFormError)}
-              maxLength={12}
-              placeholder="12 digit number"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            {nhifFormError && (
-              <p className="mt-1 text-sm text-red-600">{nhifFormError}</p>
-            )}
-            <p className="mt-1 text-xs text-gray-500">Enter the 12-digit NHIF control number for your health insurance.</p>
-          </div>
-          <Button type="submit" className="w-full">
-            Submit NHIF Payment
-          </Button>
-        </form>
-      </div>
+        <div>
+          <label htmlFor="nhifControlNumber" className="block text-sm font-medium text-gray-700 mb-1">
+            Control Number
+          </label>
+          <input
+            id="nhifControlNumber"
+            type="text"
+            value={nhifControlNumber}
+            onChange={(e) => setNhifControlNumber(e.target.value)}
+            placeholder="Enter 12-digit control number"
+            className="w-full p-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
+            maxLength={12}
+          />
+          {nhifFormError && (
+            <p className="mt-1 text-sm text-red-600">{nhifFormError}</p>
+          )}
+        </div>
+        
+        <Button 
+          type="submit"
+          disabled={isSubmitting}
+          className="w-full bg-green-600 hover:bg-green-700"
+        >
+          {isSubmitting ? 'Submitting...' : 'Submit NHIF Payment'}
+        </Button>
+      </form>
     </div>
   );
 };

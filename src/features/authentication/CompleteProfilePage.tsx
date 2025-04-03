@@ -10,6 +10,7 @@ const CompleteProfilePage: React.FC = () => {
   // Form fields
   const [name, setName] = useState('');
   const [mobilePhone, setMobilePhone] = useState('');
+  const [mobilePhoneError, setMobilePhoneError] = useState<string | null>(null);
   const [universityName, setUniversityName] = useState('');
   const [universityRegistrationID, setUniversityRegistrationID] = useState('');
   const [programName, setProgramName] = useState('');
@@ -54,6 +55,13 @@ const CompleteProfilePage: React.FC = () => {
       return false;
     }
     
+    if (!validatePhoneNumber(mobilePhone)) {
+      // Just mark the field as invalid
+      setMobilePhoneError('invalid');
+      setFormError('Please enter a valid phone number starting with 06, 07, or +255');
+      return false;
+    }
+    
     if (!universityName.trim()) {
       setFormError('University name is required');
       return false;
@@ -84,17 +92,59 @@ const CompleteProfilePage: React.FC = () => {
       return false;
     }
     
-    // Phone number validation
-    const phoneRegex = /^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/;
-    if (!phoneRegex.test(mobilePhone)) {
-      setFormError('Please enter a valid phone number');
-      return false;
-    }
-    
     setFormError(null);
     return true;
   };
   
+  const formatPhoneNumber = (input: string): string => {
+    // Remove any non-digit characters
+    let digitsOnly = input.replace(/\D/g, '');
+    
+    // Handle Tanzania prefixes
+    if (digitsOnly.startsWith('0') && (digitsOnly.startsWith('06') || digitsOnly.startsWith('07'))) {
+      // If starts with 06 or 07, convert to +255 format
+      if (digitsOnly.length > 9) {
+        digitsOnly = digitsOnly.substring(0, 10); // Limit to 10 digits (including the 0)
+      }
+      
+      // Format for display - only convert to international format when complete
+      if (digitsOnly.length === 10) {
+        return `+255${digitsOnly.substring(1)}`;
+      }
+      return digitsOnly;
+    } 
+    // Handle +255 format directly
+    else if (input.startsWith('+255')) {
+      // Extract digits after +255
+      const afterCode = digitsOnly.substring(digitsOnly.startsWith('255') ? 3 : 0);
+      
+      // Limit to 9 digits after country code
+      if (afterCode.length > 9) {
+        return `+255${afterCode.substring(0, 9)}`;
+      }
+      return `+255${afterCode}`;
+    }
+    // Handle input that doesn't match expected formats
+    else {
+      // If doesn't start with correct prefix, force 0 format
+      if (digitsOnly.length > 0 && !digitsOnly.startsWith('0')) {
+        digitsOnly = `0${digitsOnly}`;
+      }
+      
+      // Limit to 10 digits
+      if (digitsOnly.length > 10) {
+        digitsOnly = digitsOnly.substring(0, 10);
+      }
+      
+      return digitsOnly;
+    }
+  };
+  
+  const validatePhoneNumber = (phone: string): boolean => {
+    // Valid formats: +255xxxxxxxxx (12 chars) or 07xxxxxxxx/06xxxxxxxx (10 chars)
+    return /^(\+255[0-9]{9}|0[67][0-9]{8})$/.test(phone);
+  };
+
   // Update the handleSubmit function to use the completeProfile API
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -218,11 +268,49 @@ const CompleteProfilePage: React.FC = () => {
                   id="mobilePhone"
                   type="tel"
                   value={mobilePhone}
-                  onChange={(e) => setMobilePhone(e.target.value)}
-                  placeholder="+255712345678"
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
+                  onChange={(e) => {
+                    const input = e.target.value;
+                    
+                    // Only allow input that starts with valid prefixes
+                    if (input === '' || 
+                        input === '0' || 
+                        input.startsWith('06') || 
+                        input.startsWith('07') || 
+                        input.startsWith('+') ||
+                        input.startsWith('+2') ||
+                        input.startsWith('+25') ||
+                        input.startsWith('+255')) {
+                      
+                      const formattedValue = formatPhoneNumber(input);
+                      setMobilePhone(formattedValue);
+                      
+                      // Set error state based on validation, but don't show error message
+                      setMobilePhoneError(validatePhoneNumber(formattedValue) ? null : 'invalid');
+                    }
+                  }}
+                  onBlur={() => {
+                    // On blur, validate and format
+                    if (mobilePhone) {
+                      if (!validatePhoneNumber(mobilePhone)) {
+                        setMobilePhoneError('invalid'); // Just mark as invalid, no message
+                      } else if (mobilePhone.startsWith('0') && mobilePhone.length === 10) {
+                        // Auto-convert to international format on blur if complete
+                        setMobilePhone(`+255${mobilePhone.substring(1)}`);
+                        setMobilePhoneError(null);
+                      }
+                    }
+                  }}
+                  placeholder="0712345678"
+                  className={`flex h-10 w-full rounded-md border ${
+                    mobilePhoneError ? 'border-red-500' : 'border-input'
+                  } bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 ${
+                    mobilePhoneError ? 'focus:ring-red-500' : 'focus:ring-ring'
+                  }`}
                   required
                 />
+                <p className="text-xs text-gray-500">
+                  Enter Tanzanian mobile number starting with 06, 07 or +255
+                </p>
               </div>
               
               <div className="space-y-2">
@@ -264,7 +352,7 @@ const CompleteProfilePage: React.FC = () => {
                   type="text"
                   value={programName}
                   onChange={(e) => setProgramName(e.target.value)}
-                  placeholder="Enter your program/course"
+                  placeholder="Enter your program"
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
                   required
                 />
