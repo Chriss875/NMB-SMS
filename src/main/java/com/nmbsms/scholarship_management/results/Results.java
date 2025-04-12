@@ -17,7 +17,7 @@ public class Results {
     private LocalDateTime uploadTime;
     private String fileName;
     private String fileType;
-    private String email;
+    private String student;
     private String filePath;
     private long fileSize;
     private String status;

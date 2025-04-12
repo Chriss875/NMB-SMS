@@ -12,6 +12,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Collections;
+import com.nmbsms.scholarship_management.signUp.SignUpRepository;
+import com.nmbsms.scholarship_management.signUp.SignUp;
 
 
 
@@ -20,6 +22,7 @@ import java.util.Collections;
 public class ResultService {
     private final ResultsRepository resultsRepository;
     private final FileStorageConfig fileStorageConfig;
+    private final SignUpRepository signUpRepository;
 
     public void validateFileType(MultipartFile file){
         String contentType=file.getContentType();
@@ -52,9 +55,10 @@ public class ResultService {
     public Results uploadResult(String email, MultipartFile file) throws IOException {
         validateFileType(file);
         String filePath = storeFile(file);
-
+        Optional<SignUp> user = signUpRepository.findByEmail(email);
+        SignUp student= user.get();
         Results result = new Results();
-        result.setEmail(email);
+        result.setStudent(student.getName());
         result.setFileName(file.getOriginalFilename());
         result.setFilePath(filePath);
         result.setUploadTime(LocalDateTime.now());
