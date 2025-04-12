@@ -20,5 +20,6 @@ public class Results {
     private String student;
     private String filePath;
     private long fileSize;
+    private String email;
     private String status;
 }

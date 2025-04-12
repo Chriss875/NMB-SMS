@@ -59,6 +59,7 @@ public class ResultService {
         SignUp student= user.get();
         Results result = new Results();
         result.setStudent(student.getName());
+        result.setEmail(email);
         result.setFileName(file.getOriginalFilename());
         result.setFilePath(filePath);
         result.setUploadTime(LocalDateTime.now());
