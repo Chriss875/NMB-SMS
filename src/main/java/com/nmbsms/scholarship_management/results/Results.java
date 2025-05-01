@@ -13,7 +13,6 @@ import lombok.*;
 public class Results {
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
-        private Long id;
         private long resultId;
         private LocalDateTime uploadTime;
         private String fileName;
