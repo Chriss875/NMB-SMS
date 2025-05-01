@@ -3,8 +3,6 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.nio.file.Files;
 import java.nio.file.Path;
-
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import com.nmbsms.configuration.FileStorageConfig;
