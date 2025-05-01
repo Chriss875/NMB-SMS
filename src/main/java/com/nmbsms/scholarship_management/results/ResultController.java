@@ -7,8 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.HashMap;
-import org.springframework.http.HttpHeaders;
-import java.util.Optional;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import java.io.IOException;
@@ -53,21 +52,6 @@ public class ResultController {
         }
     }
 
-    @GetMapping("/download/{fileName}")
-    public ResponseEntity<byte[]> downloadResult(@PathVariable String fileName) {
-        Optional<byte[]> fileData = resultService.downloadResult(fileName);
-
-        if (fileData.isPresent()) {
-            byte[] fileContent = fileData.get();
-            HttpHeaders headers = new HttpHeaders();
-            headers.add("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
-            headers.add("Content-Type", "application/pdf");
-            return new ResponseEntity<>(fileContent, headers, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-    }
-
     @GetMapping("/all")
     public ResponseEntity<List<Results>> getAllResults() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -77,5 +61,23 @@ public class ResultController {
     }
         String email = authentication.getName();
         return ResponseEntity.ok(resultService.getAllResults(email));
-    }
+}
+
+    @GetMapping("/batch/{batchNo}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<AdminResultsDTO>> getResultsByBatchAndStatus(
+        @PathVariable Integer batchNo,
+        @RequestParam(value="status", required=false) String status){
+        List<AdminResultsDTO> results = resultService.getResultsForBatchWithStatus(status,batchNo);
+        return ResponseEntity.ok(results);
+        }
+
+    @PostMapping("/changeStatus/{resultId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> changeResultStatus(
+        @PathVariable long resultId,
+        @RequestParam(value="newStatus",required=true) String newStatus){
+        resultService.updateResultStatus(resultId, newStatus);
+        return ResponseEntity.ok("Status updated successfully");
+        }
 }

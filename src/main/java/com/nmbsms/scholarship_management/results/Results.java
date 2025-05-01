@@ -14,6 +14,7 @@ public class Results {
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         private Long id;
+        private long resultId;
         private LocalDateTime uploadTime;
         private String fileName;
         private String fileType;

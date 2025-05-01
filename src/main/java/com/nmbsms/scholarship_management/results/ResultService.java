@@ -3,6 +3,8 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.nio.file.Files;
 import java.nio.file.Path;
+
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import com.nmbsms.configuration.FileStorageConfig;
@@ -13,6 +15,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Collections;
 import com.nmbsms.scholarship_management.signUp.SignUpRepository;
+
+import jakarta.persistence.EntityNotFoundException;
+
 import com.nmbsms.scholarship_management.signUp.SignUp;
 
 
@@ -74,11 +79,6 @@ public class ResultService {
         resultsRepository.delete(result);
     }
 
-    public Results getResultByFileName(String fileName) {
-        return resultsRepository.findByFileName(fileName)
-                .orElseThrow(() -> new IllegalArgumentException("Result not found."));
-    }
-
     public List<Results> getAllResults(String email) {
         return resultsRepository.findByEmail(email);
     }
@@ -94,15 +94,22 @@ public class ResultService {
         .toList();
     }
 
-    public Optional<byte[]> downloadResult(String fileName) {
-        return resultsRepository.findByFileName(fileName)
-                .map(result -> {
-                    try {
-                        Path filePath = Paths.get(result.getFilePath());
-                        return Files.readAllBytes(filePath);
-                    } catch (IOException e) {
-                        throw new RuntimeException("Error reading file: " + fileName, e);
-                    }
-                });
+    public List<AdminResultsDTO> getResultsForBatchWithStatus(String filterStatus,Integer batchNo) {
+        String status = null;
+        if (filterStatus != null && !filterStatus.trim().equalsIgnoreCase("all")) {
+            status = filterStatus.trim().toLowerCase();
+        }
+        List<AdminResultsDTO> results = resultsRepository.getResultsForBatch(status,batchNo);
+        if (results.isEmpty()) {
+            throw new EntityNotFoundException("No results found for batch " + batchNo + " with status: " + (status != null ? status : "all"));
+        }
+        return results;
+    }
+
+    public void updateResultStatus(Long resultId, String newStatus) {
+        Results result = resultsRepository.findByResultId(resultId)
+            .orElseThrow(() -> new EntityNotFoundException("Result not found for student: " + resultId));
+        result.setStatus(newStatus);
+        resultsRepository.save(result);
     }
 }
