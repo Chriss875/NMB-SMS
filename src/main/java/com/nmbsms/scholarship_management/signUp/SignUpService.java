@@ -70,7 +70,6 @@ public class SignUpService {
             student.setCourseProgrammeName(signUpDTO.getCourseProgrammeName());
             student.setEnrolledYear(signUpDTO.getEnrolledYear());
             student.setBatchNo(signUpDTO.getBatchNo());
-            student.setProfileCompleted(true);
             student.setRole(UserRoles.STUDENT);
             signUpRepository.save(student);
             return ResponseEntity.ok("Profile created successfully");
@@ -80,7 +79,6 @@ public class SignUpService {
     }
 
     LoginDTO loginDTO= new LoginDTO();
-
     public ResponseEntity<LoginResponseDTO> login(LoginDTO loginDTO){
     if (loginDTO == null || loginDTO.getEmail() == null || loginDTO.getPassword() == null) {
         throw new InvalidCredentialsException("BAD_REQUEST", "Credentials can not be empty");
@@ -89,11 +87,10 @@ public class SignUpService {
     String email = loginDTO.getEmail().trim();
     String password = loginDTO.getPassword();
     Optional<SignUp> userOptional = signUpRepository.findByEmail(email);
-
     if (userOptional.isEmpty()) {
         throw new EntityNotFoundException("User not found");
     }
-
+    
     SignUp user = userOptional.get();
     boolean passwordMatches = passwordEncoder.matches(password, user.getPassword());
 
@@ -103,8 +100,6 @@ public class SignUpService {
         loginResponseDTO.setId(user.getId());
         loginResponseDTO.setEmail(email);
         loginResponseDTO.setToken(token);
-        loginResponseDTO.setSex(user.getSex());
-        loginResponseDTO.setProfileCompleted(user.isProfileCompleted());
         loginResponseDTO.setRole(user.getRole());
         return ResponseEntity.ok(loginResponseDTO);
 

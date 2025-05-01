@@ -63,7 +63,7 @@ public class ResultService {
         result.setFileName(file.getOriginalFilename());
         result.setFilePath(filePath);
         result.setUploadTime(LocalDateTime.now());
-        result.setStatus("Submitted");
+        result.setStatus("SUBMITTED");
         resultsRepository.save(result);
         return result;
     }

@@ -51,7 +51,7 @@ public class PaymentService {
             SignUp signUp = controlNumber.get();
             signUp.setFeeControlNumber(paymentDTO.getFeeControlNumber());
             signUp.setFeeControlNumberSubmittedAt(LocalDateTime.now());
-            signUp.setFeePaymentStatus("Submitted");
+            signUp.setFeePaymentStatus("UNPAID");
             signUpRepository.save(signUp);
         }
         return ResponseEntity.ok("University fee control number submitted successfully");
@@ -78,7 +78,7 @@ public class PaymentService {
             SignUp signUp = controlNumber.get();
             signUp.setNhifControlNumber(paymentDTO.getNhifControlNumber());
             signUp.setNhifControlNumberSubmittedAt(LocalDateTime.now());
-            signUp.setNhifPaymentStatus("Submitted");
+            signUp.setNhifPaymentStatus("UNPAID");
             signUpRepository.save(signUp);
         }
         return ResponseEntity.ok("Nhif control number submitted successfully");

@@ -49,8 +49,8 @@ public class SignUpController {
     return ResponseEntity.ok()
             .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
             .body(response);
-}
-    
+    }
+
     @PostMapping("/reset-password")
     public ResponseEntity<String> resetPassword(@RequestBody ResetPasswordDTO resetPasswordDTO){
         return signupService.resetPassword(resetPasswordDTO);

@@ -13,6 +13,7 @@ import jakarta.persistence.CascadeType;
 import com.nmbsms.scholarship_management.settings.NotificationPreferences;
 import com.nmbsms.scholarship_management.settings.Notifications;
 import java.util.List;
+import jakarta.persistence.Column;
 
 @Entity
 @Getter
@@ -24,6 +25,7 @@ public class SignUp {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(name="email",unique = true)
     private String email;
     private String password;
     private String token;
@@ -36,7 +38,6 @@ public class SignUp {
     private String enrolledYear;
     private Integer batchNo;
     private String enrollmentStatus;
-    private boolean profileCompleted;
     private UserRoles role;
     private String feeControlNumber;
     private LocalDateTime feeControlNumberSubmittedAt;

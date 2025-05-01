@@ -16,5 +16,4 @@ public class ScholarshipManagementApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(ScholarshipManagementApplication.class, args);
 	}
-
 }

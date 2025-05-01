@@ -11,15 +11,16 @@ import lombok.*;
 @AllArgsConstructor
 @Table(name = "results")
 public class Results {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    private LocalDateTime uploadTime;
-    private String fileName;
-    private String fileType;
-    private String student;
-    private String filePath;
-    private long fileSize;
-    private String email;
-    private String status;
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        private Long id;
+        private LocalDateTime uploadTime;
+        private String fileName;
+        private String fileType;
+        private String student;
+        private String filePath;
+        private long fileSize;
+        private String email;
+        private String status;
 }
+

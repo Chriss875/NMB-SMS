@@ -1,10 +1,10 @@
 package com.nmbsms.scholarship_management.profile;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.Authentication;
 import lombok.RequiredArgsConstructor;
+import com.nmbsms.exception.InvalidCredentialsException;
 
 
 @RestController
@@ -17,8 +17,7 @@ public class ProfileController {
     public ResponseEntity<ProfileResponse> getProfile(){
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     if (authentication == null || !authentication.isAuthenticated()) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                            .body(null);
+        throw new InvalidCredentialsException("UNAUTHORIZED", "Authorization is required");
     }
     String email = authentication.getName();
     ProfileResponse profile = profileService.getProfile(email);
@@ -29,8 +28,7 @@ public class ProfileController {
     public ResponseEntity<String> updateProfileInfo(@RequestBody ProfileDTO profileDTO){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                                .body("Authentication is required");
+            throw new InvalidCredentialsException("UNAUTHORIZED", "Authorization is required");
         }
         String email = authentication.getName();
         String result = profileService.updateProfile(profileDTO, email);
