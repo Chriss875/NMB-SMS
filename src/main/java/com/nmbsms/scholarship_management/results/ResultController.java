@@ -77,7 +77,14 @@ public class ResultController {
     public ResponseEntity<String> changeResultStatus(
         @PathVariable long resultId,
         @RequestParam(value="newStatus",required=true) String newStatus){
-        resultService.updateResultStatus(resultId, newStatus);
+        resultService.updateResultStatus(resultId,newStatus);
         return ResponseEntity.ok("Status updated successfully");
         }
+
+    @GetMapping("/rejected")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<AdminResultsDTO>> getRejectedStudents() {
+        List<AdminResultsDTO> results = resultService.getRejectedStudents();
+        return ResponseEntity.ok(results);
+    }
 }

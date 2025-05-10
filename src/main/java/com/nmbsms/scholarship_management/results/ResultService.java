@@ -13,9 +13,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Collections;
 import com.nmbsms.scholarship_management.signUp.SignUpRepository;
-
+import com.nmbsms.scholarship_management.admindashboard.EmailService;
 import jakarta.persistence.EntityNotFoundException;
-
 import com.nmbsms.scholarship_management.signUp.SignUp;
 
 
@@ -26,7 +25,7 @@ public class ResultService {
     private final ResultsRepository resultsRepository;
     private final FileStorageConfig fileStorageConfig;
     private final SignUpRepository signUpRepository;
-
+    private final EmailService emailService;
     public void validateFileType(MultipartFile file){
         String contentType=file.getContentType();
         if(contentType==null||!contentType.startsWith("application/pdf")){
@@ -107,7 +106,22 @@ public class ResultService {
     public void updateResultStatus(Long resultId, String newStatus) {
         Results result = resultsRepository.findByResultId(resultId)
             .orElseThrow(() -> new EntityNotFoundException("Result not found for student: " + resultId));
-        result.setStatus(newStatus);
-        resultsRepository.save(result);
+        String oldStatus = result.getStatus();
+        if (!oldStatus.equalsIgnoreCase(newStatus)) {
+            result.setStatus(newStatus);
+            resultsRepository.save(result);
+        }
+        if (newStatus.equalsIgnoreCase("APPROVED") || newStatus.equalsIgnoreCase("REJECTED")) {
+            String email=result.getEmail();
+            emailService.sendStatusUpdate(email, newStatus);
+        }
+    }
+
+    public List<AdminResultsDTO> getRejectedStudents() {
+        List<AdminResultsDTO> results = resultsRepository.getRejectedStudents();
+        if (results.isEmpty()) {
+            throw new EntityNotFoundException("No rejected students found");
+        }
+        return results;
     }
 }

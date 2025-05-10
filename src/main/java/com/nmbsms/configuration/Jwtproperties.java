@@ -9,6 +9,4 @@ import lombok.Data;
 public class Jwtproperties {
     private String secret;
     private Long expiration;
-
-    
 }

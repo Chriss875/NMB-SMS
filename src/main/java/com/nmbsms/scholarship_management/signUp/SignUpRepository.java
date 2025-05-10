@@ -23,17 +23,18 @@ public interface SignUpRepository extends JpaRepository<SignUp, Long> {
 
     @Query("SELECT COUNT(s) FROM SignUp s LEFT JOIN com.nmbsms.scholarship_management.results.Results r "+
             "ON s.name = r.student WHERE s.role = com.nmbsms.scholarship_management.signUp.UserRoles.STUDENT "+
-            " AND (s.batchNo = 1 OR s.batchNo = 2) AND r.id IS NULL")
+            "AND (s.batchNo = 1 OR s.batchNo = 2) "+
+            "AND NOT EXISTS (SELECT 1 FROM com.nmbsms.scholarship_management.results.Results r WHERE r.student = s.name AND r.status IN('SUBMITTED','REJECTED')) ")
     Integer countNotSubmittedTotal();
 
     @Query("SELECT COUNT(s) FROM SignUp s LEFT JOIN com.nmbsms.scholarship_management.results.Results r "+
         "ON s.name = r.student WHERE s.role = com.nmbsms.scholarship_management.signUp.UserRoles.STUDENT "+
-        "AND s.batchNo = 1 AND r.id IS NULL")
+        "AND s.batchNo = 1 AND NOT EXISTS (SELECT 1 FROM com.nmbsms.scholarship_management.results.Results r WHERE r.student = s.name AND r.status IN('SUBMITTED','REJECTED'))")
     Integer countNotSubmittedBatch1();
 
     @Query("SELECT COUNT(s) FROM SignUp s LEFT JOIN com.nmbsms.scholarship_management.results.Results r "+
         "ON s.name = r.student WHERE s.role = com.nmbsms.scholarship_management.signUp.UserRoles.STUDENT "+
-        "AND s.batchNo = 2 AND r.id IS NULL")
+        "AND s.batchNo = 2 AND NOT EXISTS (SELECT 1 FROM com.nmbsms.scholarship_management.results.Results r WHERE r.student = s.name AND r.status IN('SUBMITTED','REJECTED'))")
     Integer countNotSubmittedBatch2();
 
     @Query("SELECT new com.nmbsms.scholarship_management.signUp.NotSubmittedDTO(s.name,s.email,s.phoneNumber,s.universityName,s.batchNo) FROM SignUp s LEFT JOIN com.nmbsms.scholarship_management.results.Results r "+
