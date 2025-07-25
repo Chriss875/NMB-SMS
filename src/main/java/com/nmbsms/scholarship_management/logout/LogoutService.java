@@ -2,7 +2,7 @@ package com.nmbsms.scholarship_management.logout;
 import org.springframework.stereotype.Service;
 import lombok.*;
 import java.util.Date;
-import com.nmbsms.security.JwtService;
+import com.nmbsms.scholarship_management.security.JwtService;
 
 @Service
 @RequiredArgsConstructor

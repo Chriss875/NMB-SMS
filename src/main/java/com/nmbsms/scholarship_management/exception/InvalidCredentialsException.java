@@ -1,4 +1,4 @@
-package com.nmbsms.exception;
+package com.nmbsms.scholarship_management.exception;
 
 public class InvalidCredentialsException extends RuntimeException {
     private final String errorCode;

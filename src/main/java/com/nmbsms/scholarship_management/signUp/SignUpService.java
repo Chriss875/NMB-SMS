@@ -2,10 +2,10 @@ package com.nmbsms.scholarship_management.signUp;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.Optional;
-import com.nmbsms.security.JwtService;
+import com.nmbsms.scholarship_management.security.JwtService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.ResponseEntity;
-import com.nmbsms.exception.InvalidCredentialsException;
+import com.nmbsms.scholarship_management.exception.InvalidCredentialsException;
 
 
 @Service

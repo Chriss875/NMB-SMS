@@ -1,4 +1,4 @@
-package com.nmbsms.exception;
+package com.nmbsms.scholarship_management.exception;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

@@ -10,7 +10,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
-import com.nmbsms.security.JwtService;
+import com.nmbsms.scholarship_management.security.JwtService;
 
 @RestController
 @RequiredArgsConstructor

@@ -1,13 +1,13 @@
-package com.nmbsms.handler;
+package com.nmbsms.scholarship_management.handler;
 
-import com.nmbsms.exception.UsernameExistsException;
-import com.nmbsms.exception.ErrorResponse;
+import com.nmbsms.scholarship_management.exception.UsernameExistsException;
+import com.nmbsms.scholarship_management.exception.ErrorResponse;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import com.nmbsms.exception.InvalidCredentialsException;
+import com.nmbsms.scholarship_management.exception.InvalidCredentialsException;
 
 
 

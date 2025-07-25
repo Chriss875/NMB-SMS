@@ -4,7 +4,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.Authentication;
 import lombok.RequiredArgsConstructor;
-import com.nmbsms.exception.InvalidCredentialsException;
+import com.nmbsms.scholarship_management.exception.InvalidCredentialsException;
 
 
 @RestController

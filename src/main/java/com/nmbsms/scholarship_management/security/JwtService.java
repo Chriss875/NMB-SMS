@@ -1,9 +1,9 @@
-package com.nmbsms.security;
+package com.nmbsms.scholarship_management.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-import com.nmbsms.configuration.Jwtproperties;
+import com.nmbsms.scholarship_management.configuration.Jwtproperties;
 import java.util.Date;
 import javax.crypto.SecretKey;
 import org.springframework.stereotype.Service;

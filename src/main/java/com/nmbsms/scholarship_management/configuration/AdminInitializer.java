@@ -1,4 +1,4 @@
-package com.nmbsms.configuration;
+package com.nmbsms.scholarship_management.configuration;
 
 import com.nmbsms.scholarship_management.signUp.SignUp;
 import com.nmbsms.scholarship_management.signUp.SignUpRepository;

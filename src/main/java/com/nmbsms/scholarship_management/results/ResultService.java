@@ -5,7 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
-import com.nmbsms.configuration.FileStorageConfig;
+import com.nmbsms.scholarship_management.configuration.FileStorageConfig;
 import org.springframework.web.multipart.MultipartFile;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
