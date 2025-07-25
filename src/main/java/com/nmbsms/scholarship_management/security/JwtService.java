@@ -3,6 +3,7 @@ package com.nmbsms.scholarship_management.security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SecretKeyBuilder;
 import com.nmbsms.scholarship_management.configuration.Jwtproperties;
 import java.util.Date;
 import javax.crypto.SecretKey;
@@ -15,7 +16,7 @@ public class JwtService {
 
     public JwtService(Jwtproperties jwtProperties) {
         this.jwtProperties = jwtProperties;
-        this.secretKey = Keys.hmacShaKeyFor(jwtProperties.getSecret().getBytes());
+        this.secretKey = Jwts.SIG.HS256.key().build();
     }
 
     public String generateToken(String email) {

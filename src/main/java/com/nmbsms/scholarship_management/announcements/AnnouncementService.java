@@ -27,6 +27,6 @@ public class AnnouncementService {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         List<Integer> batchNos = new ArrayList<>();
         batchNos.add(batchNo);
-        return announcementRepository.findAllByBatchNo(batchNos,pageable);
+        return announcementRepository.findAllByBatchNoIn(batchNos,pageable);
     }
 }

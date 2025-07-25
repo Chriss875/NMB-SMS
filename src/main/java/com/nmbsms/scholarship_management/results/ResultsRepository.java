@@ -31,8 +31,9 @@ public interface ResultsRepository extends JpaRepository<Results,Long>{
         "AND s.batchNo = :batchNo ")
     List<AdminResultsDTO> getResultsForBatch(@Param("status") String status,@Param("batchNo") Integer batchNo);
 
-    @Query("SELECT new com.nmbsms.scholarship_management.results.AdminResultsDTO(s.name,s.universityName,s.phoneNumber,s.batchNo,r.status,r.filePath) FROM Results r WHERE r.status='REJECTED' "+
+   @Query("SELECT new com.nmbsms.scholarship_management.results.AdminResultsDTO(r.resultId,s.name,s.universityName,s.phoneNumber,s.batchNo,r.status,r.filePath) FROM Results r LEFT JOIN com.nmbsms.scholarship_management.signUp.SignUp s "+
+        "ON r.student=s.name WHERE r.status='REJECTED' "+
         "AND r.student NOT IN (SELECT r2.student FROM Results r2 WHERE r2.status IN('SUBMITTED','APPROVED')) "+
         "GROUP BY r.student")
-    List<AdminResultsDTO> getRejectedStudents();
+   List<AdminResultsDTO> getRejectedStudents();
 }

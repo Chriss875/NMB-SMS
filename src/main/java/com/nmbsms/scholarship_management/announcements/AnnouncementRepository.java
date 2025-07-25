@@ -7,5 +7,5 @@ import java.util.List;
 
 @Repository
 public interface AnnouncementRepository extends JpaRepository<Announcement, Long> {
-    Page<Announcement> findAllByBatchNo( List<Integer> batchNo, Pageable pageable);
+    Page<Announcement> findAllByBatchNoIn( List<Integer> batchNo, Pageable pageable);
 }
