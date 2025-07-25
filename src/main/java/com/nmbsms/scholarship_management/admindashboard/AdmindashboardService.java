@@ -82,7 +82,7 @@ public class AdmindashboardService {
     public List <StudentPaymentStatusDTO> getStudentsWithPendingPayments(String filterType){
         List<StudentPaymentStatusDTO> students;
         if (filterType == null || filterType.trim().isEmpty()) {
-            students = signUpRepository.getStudentsWithPendingPayments();
+            students = signUpRepository.getStudentsWithBothNull();
         } else {
             switch (filterType.toLowerCase()) {
                 case "both":
@@ -95,7 +95,7 @@ public class AdmindashboardService {
                     students = signUpRepository.getStudentsWithNhifPending();
                     break;
                 default:
-                    students = signUpRepository.getStudentsWithPendingPayments();
+                    students = signUpRepository.getStudentsWithBothNull();
                     break;
             }
         }

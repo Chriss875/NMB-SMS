@@ -2,13 +2,15 @@ package com.nmbsms.scholarship_management.admindashboard;
 import org.springframework.stereotype.Service;
 import lombok.*;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.mail.SimpleMailMessage;
 
 @Service
 @RequiredArgsConstructor
 public class EmailService {
     private final JavaMailSender mailSender;
-
+    
+    @Async
     public void sendStatusUpdate(String to, String status){
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);

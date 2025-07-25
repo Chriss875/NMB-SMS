@@ -37,6 +37,15 @@ public class JwtService {
         return claims.getSubject();
     }
 
+    public Integer extractBatchNo(String token) {
+        Claims claims = Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+        return claims.get("batchNo", Integer.class);
+    }
+
     public Date extractExpiration(String token) {
         return Jwts.parser()
                 .verifyWith(secretKey)

@@ -94,13 +94,14 @@ public interface SignUpRepository extends JpaRepository<SignUp, Long> {
 
     @Query("SELECT new com.nmbsms.scholarship_management.signUp.StudentPaymentStatusDTO(s.name,s.feePaymentStatus,s.nhifPaymentStatus,s.batchNo) FROM SignUp s "+
         "WHERE s.role=com.nmbsms.scholarship_management.signUp.UserRoles.STUDENT "+
-        "AND (s.feePaymentStatus!= 'PAID' OR s.nhifPaymentStatus!='PAID' OR s.feePaymentStatus IS NULL OR s.nhifPaymentStatus IS NULL) "+
-        "ORDER BY CASE " +
-        "WHEN (s.feePaymentStatus != 'PAID' OR s.feePaymentStatus IS NULL) AND (s.nhifPaymentStatus != 'PAID' OR s.nhifPaymentStatus IS NULL) THEN 1 " +
-        "WHEN s.nhifPaymentStatus = 'PAID' AND (s.feePaymentStatus != 'PAID' OR s.feePaymentStatus IS NULL) THEN 2 " +
-        "WHEN s.feePaymentStatus = 'PAID' AND (s.nhifPaymentStatus != 'PAID' OR s.nhifPaymentStatus IS NULL) THEN 3 " +
-        "ELSE 4 END, s.batchNo")
-        List<StudentPaymentStatusDTO> getStudentsWithPendingPayments();
+        "AND s.feePaymentStatus IS NOT NULL AND s.nhifPaymentStatus IS NOT NULL "+
+        "ORDER BY CASE "+
+        "WHEN s.feePaymentStatus = 'SUBMITTED' AND s.nhifPaymentStatus = 'SUBMITTED' THEN 1 " +
+        "WHEN s.feePaymentStatus = 'SUBMITTED' AND s.nhifPaymentStatus = 'PAID' THEN 2 " +
+        "WHEN s.feePaymentStatus = 'PAID' AND s.nhifPaymentStatus = 'SUBMITTED' THEN 3 " +
+        "WHEN s.feePaymentStatus = 'PAID' AND s.nhifPaymentStatus = 'PAID' THEN 4 " +
+        "ELSE 5 END")
+        List<StudentPaymentStatusDTO> getStudentsWithControlNumber();
 
     @Query("SELECT new com.nmbsms.scholarship_management.signUp.StudentPaymentStatusDTO(s.name, s.feePaymentStatus, s.nhifPaymentStatus, s.batchNo) " +
         "FROM SignUp s " +

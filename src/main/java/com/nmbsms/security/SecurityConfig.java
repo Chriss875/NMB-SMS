@@ -36,6 +36,7 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Excepti
         .sessionManagement(session -> session
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(auth -> auth
+            .requestMatchers("/swagger-ui/**", "/api-docs/**").permitAll()
             .requestMatchers("/api/auth/**").permitAll()
             .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
             .anyRequest().authenticated())

@@ -101,6 +101,7 @@ public class SignUpService {
         loginResponseDTO.setEmail(email);
         loginResponseDTO.setToken(token);
         loginResponseDTO.setRole(user.getRole());
+        loginResponseDTO.setBatchNo(user.getBatchNo());
         return ResponseEntity.ok(loginResponseDTO);
 
     } else {

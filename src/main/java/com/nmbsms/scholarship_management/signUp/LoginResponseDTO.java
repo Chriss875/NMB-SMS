@@ -10,4 +10,5 @@ public class LoginResponseDTO {
     private String email;
     private UserRoles role;
     private long id;
+    private Integer batchNo;
 }

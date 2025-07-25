@@ -20,15 +20,12 @@ public class Announcement {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private String title;
-
     private String content;
-
-    private String senderName;
-
+    private String senderEmail;
     private LocalDateTime createdAt;
-    
+    private Integer batchNo;
+
     @Builder.Default
     private boolean isRead=false;
 

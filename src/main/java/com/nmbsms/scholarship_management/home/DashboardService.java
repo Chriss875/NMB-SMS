@@ -33,7 +33,7 @@ public class DashboardService {
         }
 
         Map<String, Object> dashboardData = new HashMap<>();
-        Page<Announcement> announcements=announcementService.getAllAnnouncements(0,3);
+        Page<Announcement> announcements=announcementService.getAllAnnouncements(0,3,0);
         dashboardData.put("announcements", announcements);
 
         List<PaymentHistoryDTO> payments = paymentService.getPaymentHistory(email).getBody();

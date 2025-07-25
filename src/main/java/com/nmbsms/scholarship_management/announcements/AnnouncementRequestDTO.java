@@ -9,6 +9,4 @@ import lombok.*;
 public class AnnouncementRequestDTO {
     private String title;
     private String content;
-    private String senderName;
-
 }
