@@ -14,7 +14,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 @EnableAsync
 public class ScholarshipManagementApplication {
-
 	public static void main(String[] args) {
 		SpringApplication.run(ScholarshipManagementApplication.class, args);
 	}
