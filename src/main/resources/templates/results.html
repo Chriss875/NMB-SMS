@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Upload Results</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f7fc; margin: 0; }
+        .sidebar { width: 200px; position: fixed; top: 0; left: 0; height: 100%; background-color: #fff; padding-top: 60px; }
+        .sidebar a { display: block; padding: 10px; color: #333; text-decoration: none; }
+        .sidebar a.active { background-color: #007bff; color: white; }
+        .content { margin-left: 220px; padding: 20px; }
+        .header { background-color: #003087; color: white; padding: 10px; position: fixed; width: 100%; top: 0; }
+        .upload-box { border: 2px dashed #ccc; padding: 20px; text-align: center; margin-bottom: 20px; }
+        .uploaded-file { border: 1px solid #ccc; padding: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h3>NMB Nuru Yangu Scholarship</h3>
+    </div>
+
+    <div class="sidebar">
+        <a href="#">Home</a>
+        <a href="#">Profile</a>
+        <a href="#" class="active">Results</a>
+        <a href="#">Payment</a>
+        <a href="#">Messages <span th:text="${unreadMessages}"></span></a>
+        <a href="#">Career Mentorship</a>
+        <a href="#">Settings</a>
+        <a href="#">Logout</a>
+    </div>
+
+    <div class="content">
+        <h2>Results</h2>
+
+        <!-- Upload Section -->
+        <div class="upload-box">
+            <form th:action="@{/results/upload}" method="post" enctype="multipart/form-data">
+                <p>Drag and drop file here or click to browse</p>
+                <p>PDF files only, maximum size: 5MB</p>
+                <input type="file" name="file" accept="application/pdf" required/>
+                <br/><br/>
+                <button type="submit">Browse Files</button>
+            </form>
+            <p th:if="${message}" th:text="${message}" style="color: green;"></p>
+            <p th:if="${error}" th:text="'Error: ' + ${error}" style="color: red;"></p>
+        </div>
+
+        <!-- Display Uploaded Files -->
+        <div th:if="${results}">
+            <h3>Uploaded Documents</h3>
+            <div th:each="result : ${results}" class="uploaded-file">
+                <span th:text="${result.fileName}"></span>
+                <span th:text="${result.fileSize / (1024.0 * 1024.0) + ' MB'}"></span>
+                <a th:href="@{'/results/download/' + ${result.id}}" download>Download</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
