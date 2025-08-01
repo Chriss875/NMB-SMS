@@ -11,7 +11,7 @@ import com.nmbsms.scholarship_management.signUp.StudentResultDTO;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping(path= "api/admin")
+@RequestMapping(path= "api/v1/admin")
 public class AdmindasboardController {
     private final AdmindashboardService admindashboardService;
 

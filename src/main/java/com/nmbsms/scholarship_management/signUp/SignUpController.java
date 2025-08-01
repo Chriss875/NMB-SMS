@@ -6,6 +6,7 @@ import java.util.HashMap;
 import org.springframework.http.HttpHeaders;
 import java.util.Map;
 
+
 @RestController
 @RequestMapping(path="/api/auth")
 public class SignUpController {

@@ -8,8 +8,6 @@ import jakarta.persistence.EntityNotFoundException;
 import com.nmbsms.scholarship_management.signUp.SignUp;
 import lombok.*;
 import org.springframework.stereotype.Service;
-import java.util.Map;
-import java.util.HashMap;
 import com.nmbsms.scholarship_management.announcements.Announcement;
 import org.springframework.data.domain.Page;
 import java.util.List;
@@ -26,24 +24,24 @@ public class DashboardService {
     private final SignUpRepository signUpRepository;
     private final SignUpService  signUpService;
 
-    public Map<String, Object> getDashboardData(String email) {
+
+    public DashboardDTO getDashboardData(String email) {
+        DashboardDTO dashboardData = new DashboardDTO();
         Optional<SignUp> signUp = signUpRepository.findByEmail(email);
         if (signUp.isEmpty()) {
             throw new EntityNotFoundException("User not found");
         }
-
-        Map<String, Object> dashboardData = new HashMap<>();
         Page<Announcement> announcements=announcementService.getAllAnnouncements(0,3,0);
-        dashboardData.put("announcements", announcements);
+        dashboardData.setAnnouncements(announcements);
 
         List<PaymentHistoryDTO> payments = paymentService.getPaymentHistory(email).getBody();
-        dashboardData.put("payments", payments);
+        dashboardData.setPayments(payments);
 
         List<String> resultStatus = resultService.getResultStatus(email);
-        dashboardData.put("resultStatus", resultStatus);
+        dashboardData.setResultStatus(resultStatus);
 
         String enrollmentStatus= signUpService.getEnrollmentStatus(email);
-        dashboardData.put("enrollment status",enrollmentStatus);
+        dashboardData.setEnrollmentStatus(enrollmentStatus);
         return dashboardData;
     }
 }
